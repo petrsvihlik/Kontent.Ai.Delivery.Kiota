@@ -1,0 +1,28 @@
+{
+  "descriptionHash": "4978AA6B9E932412B1C151055F6D4A3649A1FA7D22906695D0ECF00DDF3CB5A8120D5CB496EF1A03178D4568467FA59821C461A573969400D40D1384A6CFA4A0",
+  "descriptionLocation": "C:\\git\\Kontent.Ai.Delivery.Kiota\\.\\delivery_api.json",
+  "lockFileVersion": "1.0.0",
+  "kiotaVersion": "0.7.1.0",
+  "clientClassName": "DeliveryClient",
+  "clientNamespaceName": "Kontent.Ai.Delivery.Kiota",
+  "language": "CSharp",
+  "usesBackingStore": false,
+  "includeAdditionalData": true,
+  "serializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Text.TextSerializationWriterFactory"
+  ],
+  "deserializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Text.TextParseNodeFactory"
+  ],
+  "structuredMimeTypes": [
+    "application/json",
+    "application/xml",
+    "text/plain",
+    "text/xml",
+    "text/yaml"
+  ],
+  "includePatterns": [],
+  "excludePatterns": []
+}

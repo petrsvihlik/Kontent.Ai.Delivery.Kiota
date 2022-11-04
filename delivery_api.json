@@ -1,0 +1,3241 @@
+{
+  "info": {
+    "description": "# Introduction\n\n\nThe Delivery API is a read-only REST API that serves published content from your Kontent.ai projects.\n\nUse the Delivery API to deliver large amounts of content to your website or app. Your content is [cached in a CDN](/learn/reference/delivery-api/#tag/How-the-API-caches-your-content), which makes the content quickly available from wherever you are. The API provides [content filtering](/learn/reference/delivery-api/#tag/Filtering-content) that you can use to retrieve just the parts of content you need.\n\nAll requests to the API must be made securely over HTTPS with TLS 1.2.\n\n# Production vs. Preview\n\n\nYou can work with the Delivery REST API in two modes:\n* Production – Get the published versions of content items.\n* Preview – Get the latest versions of content items. The latest version can come from both published and unpublished content items.\n\nIn both cases, you use the same endpoints to request data but with a different base URL.\n\nTo retrieve **published** content items from your project, use the **production** URL:\\\n`https://deliver.kontent.ai/<YOUR_PROJECT_ID>/items`\n\n<div class=\"callout callout--tip\">\n\n<p><strong>Protect your content</strong></p>\n<p>The Delivery API is public by default. To protect your published content, use the Delivery API with <a data-item-id=\"312ecd2f-d37f-4055-82c2-ac912d0d4b8d\" href=\"https://kontent.ai/learn/link-to/secure_access\">secure access</a> enabled.</p>\n\n</div>\n\nTo preview **latest version** of your content items from your project, use the **preview** URL:\\\n`https://preview-deliver.kontent.ai/<YOUR_PROJECT_ID>/items`\n\nIf you want to preview the latest version of your content, you need to authorize your request.\n\n<div class=\"code-samples\"><ul class=\"language-selector__list\"><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"javascript\">JavaScript</a></li><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"typescript\">TypeScript</a></li><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"_net\">.NET</a></li><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"php\">PHP</a></li><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"java\">Java</a></li><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"ruby\">Ruby</a></li><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"ios\">iOS</a></li><li class=\"language-selector__item\"><a class=\"language-selector__link\" href=\"#\" data-platform=\"rest\">REST</a></li></ul>\n\n<pre class=\"line-numbers\" data-platform-code=\"javascript\" data-platform-code-original=\"JavaScript\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">JavaScript</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n&nbsp;\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '&lt;YOUR_PROJECT_ID&gt;',\n  previewApiKey: '&lt;YOUR_PREVIEW_API_KEY&gt;',\n  defaultQueryConfig: {\n    usePreviewMode: true, // Queries the Delivery Preview API.\n  }\n});\n&nbsp;\nconst response = await deliveryClient.item('my_article')\n  .toPromise();</div></pre>\n\n<pre class=\"line-numbers\" data-platform-code=\"typescript\" data-platform-code-original=\"TypeScript\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">TypeScript</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { IContentItem, createDeliveryClient, Elements } from '@kontent-ai/delivery-sdk';\n&nbsp;\n// Create strongly typed models according to https://kontent.ai/learn/tutorials/develop-apps/get-content/using-strongly-typed-models\nexport type Article = IContentItem&lt;{\n    title: Elements.TextElement;\n    summary: Elements.RichTextElement;\n    post_date: Elements.DateTimeElement;\n    teaser_image: Elements.AssetsElement;\n    related_articles: Article[];\n  }&gt;;\n&nbsp;\nconst deliveryClient = createDeliveryClient({\n    projectId: '&lt;YOUR_PROJECT_ID&gt;',\n    previewApiKey: '&lt;YOUR_PREVIEW_API_KEY&gt;',\n    defaultQueryConfig:  {\n        usePreviewMode: true, // Queries the Delivery Preview API.\n    },\n});\n&nbsp;\nconst response = await deliveryClient.item&lt;Article&gt;('my_article')\n    .toPromise();</div></pre>\n\n<pre class=\"line-numbers\" data-platform-code=\"_net\" data-platform-code-original=\".NET\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">C#</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n&nbsp;\n// Initializes a delivery client for previewing content\nIDeliveryClient client = DeliveryClientBuilder\n    .WithOptions(builder =&gt; builder\n        .WithProjectId(\"&lt;YOUR_PROJECT_ID&gt;\")\n        .UsePreviewApi(\"&lt;YOUR_PREVIEW_API_KEY&gt;\")\n        .Build())\n    .Build();\n&nbsp;\n// Generate strongly typed models via https://github.com/kontent-ai/model-generator-net\nIDeliveryItemResponse&lt;Article&gt; response = await client.GetItemAsync&lt;Article&gt;(\"my_article\");\nArticle item = response.Item;</div></pre>\n\n<pre class=\"line-numbers\" data-platform-code=\"php\" data-platform-code-original=\"PHP\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">PHP</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n&nbsp;\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\n&nbsp;\n$client = new DeliveryClient('&lt;YOUR_PROJECT_ID&gt;', '&lt;YOUR_PREVIEW_API_KEY&gt;');\n&nbsp;\n$item = $client-&gt;getItem('my_article');</div></pre>\n\n<pre class=\"line-numbers\" data-platform-code=\"java\" data-platform-code-original=\"Java\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">Java</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n&nbsp;\n// Initializes a Delivery client for preview\nDeliveryClient client = new DeliveryClient(\n  DeliveryOptions.builder()\n    .projectId(\"&lt;YOUR_PROJECT_ID&gt;\")\n    .previewApiKey(\"&lt;YOUR_PREVIEW_API_KEY&gt;\")\n    .usePreviewApi(true)\n    .build()\n);\n&nbsp;\n// Registers the model class for articles\n// Tip: Create strongly typed models according to https://kontent.ai/learn/strongly-typed-models\nclient.registerType(Article.class);\n&nbsp;\n// Gets an article\nCompletionStage&lt;Article&gt; article = client.getItem(\"my_article\", Article.class);</div></pre>\n\n<pre class=\"line-numbers\" data-platform-code=\"ruby\" data-platform-code-original=\"Ruby\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">Ruby</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\"># Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n&nbsp;\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '&lt;YOUR_PROJECT_ID&gt;',\n                    preview_key: '&lt;YOUR_PREVIEW_API_KEY&gt;'\ndelivery_client.item('my_article').execute do |response|\n  puts response.to_s\nend</div></pre>\n\n<pre class=\"line-numbers\" data-platform-code=\"ios\" data-platform-code-original=\"iOS\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">Swift</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">// Tip: Find more about Swift SDK at https://kontent.ai/learn/ios\nimport KenticoKontentDelivery\n&nbsp;\nlet client = DeliveryClient.init(projectId: \"&lt;YOUR_PROJECT_ID&gt;\", apiKey: \"&lt;YOUR_PREVIEW_API_KEY&gt;\")\n&nbsp;\n// More about strongly-typed models https://github.com/Kentico/kontent-delivery-sdk-swift#using-strongly-typed-models\nclient.getItem(modelType: Article.self, itemName: \"my_article\") { (isSuccess, itemResponse, error) in\n    if isSuccess {\n        if let article = itemResponse.item {\n            // Use your item here\n        }\n    } else {\n        if let error = error {\n            print(error)\n        }\n    }\n}</div></pre>\n\n<pre class=\"line-numbers\" data-platform-code=\"rest\" data-platform-code-original=\"REST\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">cURL</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">curl --request GET \\\n  --url https://preview-deliver.kontent.ai/&lt;YOUR_PROJECT_ID&gt;/items/my_article \\\n  --header 'authorization: Bearer &lt;YOUR_PREVIEW_API_KEY&gt;'</div></pre>\n\n</div>\n\nFor the Delivery Preview API, you can use two concurrent API keys, Primary and Secondary. For more details on how to work with content preview, see [configuring preview](/learn/tutorials/develop-apps/build-strong-foundation/set-up-preview/).\n\n# Authentication\n\n\nBy default, the Delivery API does not require authentication. However, if you enable [secure access](/learn/reference/delivery-api/#tag/Secure-access) for the Delivery API or use the Delivery Preview API, you need to authenticate your requests with valid API keys.\n\nTo get data from the Delivery API with secure access enabled or the Delivery Preview API, send your requests over HTTPS using the `Authorization` header in the following format: `Authorization: Bearer <YOUR_API_KEY>`. Requests with an incorrect or missing `Authorization` header will fail with an [error](/learn/reference/delivery-api/#tag/Errors).\n\nTo get your API key, go to [Kontent.ai](https://app.kontent.ai/) > Project settings > API keys. The API keys provide access to a single Kontent.ai project. You will need different API keys for each of your projects.\n",
+    "title": "Delivery REST API",
+    "version": "1"
+  },
+  "openapi": "3.0.2",
+  "paths": {
+    "/{project_id}/items": {
+      "get": {
+        "description": "Retrieve a list of content items from your project. By default, the API returns an unfiltered paginated list of content items ordered alphabetically by codename. The [response size](#section/Response-size) is limited to 2000 items.\n\nThe `modular_content` object property will contain both components and linked items in the API response. See [Linked content and components](/learn/reference/delivery-api/#tag/Linked-content-and-components) for more details.\n\nIf you need to export all content items from your project, we recommend using the [Enumerate content items](/learn/reference/delivery-api/#operation/enumerate-content-items) endpoint.\n\nYou can change the order by specifying the `order` query parameter. You can customize pagination by specifying both the `skip` and `limit` query parameters. Note that the `limit` parameter affects only the `items` property, not `modular_content`.\n\n<div class=\"callout callout--tip\">\n\n<p><strong>Get only the items you need</strong></p>\n<p>To retrieve specific content items, use the <a data-item-id=\"b6cf1d73-471a-4f1e-b0a9-f0e041e2d905\" href=\"https://kontent.ai/learn/link-to/filtering_content\">filtering parameters</a> in your requests. For example, you can request items tagged with a taxonomy term, items of a specific type, or items modified in the past three days.</p>\n\n</div>\n",
+        "operationId": "list-content-items",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/language"
+          },
+          {
+            "$ref": "#/components/parameters/elements"
+          },
+          {
+            "$ref": "#/components/parameters/order"
+          },
+          {
+            "$ref": "#/components/parameters/depth"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/limit_8cd54e2"
+          },
+          {
+            "$ref": "#/components/parameters/includetotalcount"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          }
+        ],
+        "summary": "List content items",
+        "tags": [
+          "Content items"
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of content items matching the specified criteria.\n",
+            "headers": {
+              "X-Request-Charge": {
+                "$ref": "#/components/parameters/x_request_charge"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "items",
+                    "modular_content",
+                    "pagination"
+                  ],
+                  "properties": {
+                    "items": {
+                      "description": "A list of content items.\n",
+                      "items": {
+                        "$ref": "#/components/schemas/ContentItem"
+                      },
+                      "uniqueItems": true,
+                      "type": "array"
+                    },
+                    "modular_content": {
+                      "description": "A dictionary of [components and linked items](/learn/reference/delivery-api/#tag/Linked-content-and-components).\n\n**Note**: The items and components are not in any particular order.\n",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/ContentItem",
+                        "x-additionalPropertiesName": "<ItemOrComponentCodename>"
+                      },
+                      "type": "object"
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  },
+                  "type": "object"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "system": {
+                        "id": "4d4dc14d-8c7c-471f-b797-c6694c604964",
+                        "name": "About us",
+                        "codename": "about_us",
+                        "language": "en-US",
+                        "type": "article",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-17T07:22:51.6711216Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "title": {
+                          "type": "text",
+                          "name": "Title",
+                          "value": "Great news about us"
+                        },
+                        "body_copy": {
+                          "type": "rich_text",
+                          "name": "Body",
+                          "images": {},
+                          "links": {},
+                          "modular_content": [
+                            "n43768251_0eaa_01f6_69c2_f93047f076e1"
+                          ],
+                          "value": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n43768251_0eaa_01f6_69c2_f93047f076e1\"></object>"
+                        },
+                        "related_articles": {
+                          "type": "modular_content",
+                          "name": "Related articles",
+                          "value": [
+                            "my_article"
+                          ]
+                        },
+                        "author": {
+                          "type": "modular_content",
+                          "name": "Author",
+                          "value": [
+                            "jenny_brown"
+                          ]
+                        },
+                        "url": {
+                          "type": "url_slug",
+                          "name": "URL pattern",
+                          "value": "great-news-about-us"
+                        }
+                      }
+                    },
+                    {
+                      "system": {
+                        "id": "0afdd600-d6c5-4ac4-bb6b-d2847ca779fe",
+                        "name": "About us",
+                        "codename": "about_us_0afdd60",
+                        "language": "en-US",
+                        "type": "navigation_item",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-04T15:14:48.0057835Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "title": {
+                          "type": "text",
+                          "name": "Title",
+                          "value": "About us"
+                        },
+                        "url": {
+                          "type": "url_slug",
+                          "name": "URL",
+                          "value": "about-us"
+                        },
+                        "subitems": {
+                          "type": "modular_content",
+                          "name": "Subitems",
+                          "value": [
+                            "about_us"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "modular_content": {
+                    "about_us": {
+                      "system": {
+                        "id": "4d4dc14d-8c7c-471f-b797-c6694c604964",
+                        "name": "About us",
+                        "codename": "about_us",
+                        "language": "en-US",
+                        "type": "article",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-17T07:22:51.6711216Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "title": {
+                          "type": "text",
+                          "name": "Title",
+                          "value": "Great news about us"
+                        },
+                        "body_copy": {
+                          "type": "rich_text",
+                          "name": "Body",
+                          "images": {},
+                          "links": {},
+                          "modular_content": [
+                            "n43768251_0eaa_01f6_69c2_f93047f076e1"
+                          ],
+                          "value": "<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n43768251_0eaa_01f6_69c2_f93047f076e1\"></object>"
+                        },
+                        "related_articles": {
+                          "type": "modular_content",
+                          "name": "Related articles",
+                          "value": [
+                            "my_article"
+                          ]
+                        },
+                        "author": {
+                          "type": "modular_content",
+                          "name": "Author",
+                          "value": [
+                            "jenny_brown"
+                          ]
+                        },
+                        "url": {
+                          "type": "url_slug",
+                          "name": "URL pattern",
+                          "value": "great-news-about-us"
+                        }
+                      }
+                    },
+                    "jenny_brown": {
+                      "system": {
+                        "id": "59838cfd-ba15-4607-8e6a-d91931fc7ce6",
+                        "name": "Jenny Brown",
+                        "codename": "jenny_brown",
+                        "language": "en-US",
+                        "type": "author",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-05T11:33:54.5271987Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "name": {
+                          "type": "text",
+                          "name": "Name",
+                          "value": "Jenny Brown"
+                        },
+                        "bio": {
+                          "type": "rich_text",
+                          "name": "Bio",
+                          "images": {},
+                          "links": {},
+                          "modular_content": [],
+                          "value": "<p>Jenny is here for all things wildlife and, newly, climate changes. Check her out.</p>"
+                        }
+                      }
+                    },
+                    "my_article": {
+                      "system": {
+                        "id": "29b82988-fb9e-4327-a34b-b568cfaa39e9",
+                        "name": "My article",
+                        "codename": "my_article",
+                        "language": "en-US",
+                        "type": "article",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-03T13:58:21.5779868Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "title": {
+                          "type": "text",
+                          "name": "Title",
+                          "value": "My article"
+                        },
+                        "body_copy": {
+                          "type": "rich_text",
+                          "name": "Body",
+                          "images": {},
+                          "links": {},
+                          "modular_content": [],
+                          "value": "<p>Lorem ipsum dolor sit amet.</p>"
+                        },
+                        "related_articles": {
+                          "type": "modular_content",
+                          "name": "Related articles",
+                          "value": [
+                            "about_us"
+                          ]
+                        },
+                        "author": {
+                          "type": "modular_content",
+                          "name": "Author",
+                          "value": [
+                            "jean_morris"
+                          ]
+                        },
+                        "url": {
+                          "type": "url_slug",
+                          "name": "URL pattern",
+                          "value": "my-article"
+                        }
+                      }
+                    },
+                    "n43768251_0eaa_01f6_69c2_f93047f076e1": {
+                      "system": {
+                        "id": "43768251-0eaa-01f6-69c2-f93047f076e1",
+                        "name": "43768251-0eaa-01f6-69c2-f93047f076e1",
+                        "codename": "n43768251_0eaa_01f6_69c2_f93047f076e1",
+                        "language": "en-US",
+                        "type": "tweet",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-17T07:22:51.6711216Z"
+                      },
+                      "elements": {
+                        "theme": {
+                          "type": "multiple_choice",
+                          "name": "Theme",
+                          "value": [
+                            {
+                              "name": "Light",
+                              "codename": "light"
+                            }
+                          ]
+                        },
+                        "tweet_link": {
+                          "type": "text",
+                          "name": "Tweet link",
+                          "value": "https://twitter.com/Kontent_ai/status/1222987911940972545"
+                        },
+                        "display_options": {
+                          "type": "multiple_choice",
+                          "name": "Display options",
+                          "value": [
+                            {
+                              "name": "Hide thread",
+                              "codename": "hide_thread"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "pagination": {
+                    "skip": 0,
+                    "limit": 3,
+                    "count": 3,
+                    "next_page": "https://deliver.kontent.ai/8d20758c-d74c-4f59-ae04-ee928c0816b7/items/?limit=3&skip=3"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Maximum response size reached.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryError"
+                },
+                "example": {
+                  "message": "Your request reached the maximum response size of 2001 content items. To make a successful request, use content filtering and the 'limit' parameter to retrieve fewer content items. If you need to retrieve all content items from your project, we recommend using the Enumerate content items endpoint. Find more details in https://kontent.ai/learn/dapi-response-size.",
+                  "request_id": "a41e3cfedccedf4a",
+                  "error_code": 6,
+                  "specific_code": 0
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.items()\n  .limitParameter(3)\n  .toPromise();"
+          },
+          {
+            "lang": "TypeScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { createDeliveryClient } from '@kontent-ai/delivery-sdk';\nimport { Article } from './models/Article';\n\nconst deliveryClient = createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>',\n});\n\nconst response = await deliveryClient.items<Article>()\n  .type('article')\n  .limitParameter(3)\n  .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets specific elements of 3 articles ordered by the \"Post date\" element\n// ProTip: Use https://kontent.ai/learn/net-strong-types\nIDeliveryItemListingResponse<Article> response = await client.GetItemsAsync<Article>(\n    new EqualsFilter(\"system.type\", \"article\"),\n    new LimitParameter(3)\n    );\n\nIList<Article> items = response.Items;"
+          },
+          {
+            "lang": "PHP",
+            "source": "// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\nuse Kentico\\Kontent\\Delivery\\QueryParams;\n\n$client = new DeliveryClient('<YOUR_PROJECT_ID>');\n\n$items = $client->getItems((new QueryParams())\n            ->limit(3));"
+          },
+          {
+            "lang": "Java",
+            "source": "// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n\n// Initializes a DeliveryClient\nDeliveryClient client = new DeliveryClient(\"<YOUR_PROJECT_ID>\");\n\n// Registers the model class for articles\n// Tip: Create strongly typed models according to https://kontent.ai/learn/strongly-typed-models\nclient.registerType(Article.class);\n\n// Gets 3 articles ordered by the \"Post date\" element\nCompletionStage<List<Article>> articles = client.getItems(\n    Article.class,\n    DeliveryParameterBuilder.params()\n        .page(null, 3)\n        .orderByDesc(\"post_date\")\n        .build()\n);"
+          },
+          {
+            "lang": "Ruby",
+            "source": "# Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '<YOUR_PROJECT_ID>'\ndelivery_client.items('system.type'.eq('article'))\n               .limit(3)\n               .execute do |response|\n                 items = response.items\n               end"
+          },
+          {
+            "lang": "iOS",
+            "source": "// Tip: Find more about Swift SDK at https://kontent.ai/learn/ios\nimport KenticoKontentDelivery\n \nlet client = DeliveryClient.init(projectId:\"<YOUR_PROJECT_ID>\")\n \nlet customQuery = \"system.type=article&items?limit=3\"\nclient.getItems(modelType: Article.self, customQuery: customQuery) { (isSuccess, itemsResponse, error) in\n      if isSuccess {\n           if let articles = itemsResponse?.items {\n               // Use your items here\n           }\n       } else {\n           if let error = error {\n               print(error)\n           }\n       }"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/items?system.type=article&limit=3' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/items/{item_codename}": {
+      "get": {
+        "description": "Retrieve a specific content item by specifying its codename.\n\nThe [response size](#section/Response-size) is limited to 2000 items.\n",
+        "operationId": "retrieve-a-content-item",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/item_codename"
+          },
+          {
+            "$ref": "#/components/parameters/language"
+          },
+          {
+            "$ref": "#/components/parameters/elements"
+          },
+          {
+            "$ref": "#/components/parameters/depth"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          }
+        ],
+        "summary": "Retrieve a content item",
+        "tags": [
+          "Content items"
+        ],
+        "responses": {
+          "200": {
+            "description": "A single content item object.\n",
+            "headers": {
+              "X-Request-Charge": {
+                "$ref": "#/components/parameters/x_request_charge"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "item",
+                    "modular_content"
+                  ],
+                  "properties": {
+                    "item": {
+                      "$ref": "#/components/schemas/ContentItem"
+                    },
+                    "modular_content": {
+                      "description": "The collection of related Content item objects (including component objects).\n",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/ContentItem",
+                        "x-additionalPropertiesName": "<content_item_codename>"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "example": {
+                  "item": {
+                    "system": {
+                      "id": "7b11fe14-6282-4daa-b901-e59e231cd93c",
+                      "name": "How to write error messages",
+                      "codename": "how_to_error_message",
+                      "language": "en-US",
+                      "type": "article",
+                      "collection": "default",
+                      "sitemap_locations": [],
+                      "last_modified": "2020-12-16T15:08:53.2391808Z",
+                      "workflow_step": "published"
+                    },
+                    "elements": {
+                      "title": {
+                        "type": "text",
+                        "name": "Title",
+                        "value": "Writing good error messages"
+                      },
+                      "body_copy": {
+                        "type": "rich_text",
+                        "name": "Body",
+                        "images": {},
+                        "links": {},
+                        "modular_content": [
+                          "n78ee300e_7a58_0117_819e_529b2294067b"
+                        ],
+                        "value": "<p>The 3 most important things when writing error messages</p>\n<ol>\n  <li>Don’t abuse alerts for upselling or showing superfluous information. People will stop reading the messages that are actually important.</li>\n  <li>Don’t just assume people know about the context of a message. They might toggle between apps and see your message days after it happened. Always include enough information for users to make sense of it.</li>\n  <li>Use a friendly, non-technical, non-threatening tone of voice.</li>\n</ol>\n<p><em><strong>TL;DR Write actionable error messages that laypeople can understand.*</strong></em></p>\n<p><em>*Not sure if they do? Show them to a non-technical person and ask them to explain it back to you.</em></p>\n<p><em>Read the full story on </em><a href=\"https://medium.com/@thomasfuchs/how-to-write-an-error-message-883718173322\" data-new-window=\"true\" title=\"How to write a great error message\" target=\"_blank\" rel=\"noopener noreferrer\"><em>Medium</em></a><em>.</em></p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n78ee300e_7a58_0117_819e_529b2294067b\"></object>"
+                      },
+                      "author": {
+                        "type": "modular_content",
+                        "name": "Author",
+                        "value": [
+                          "jenny_brown"
+                        ]
+                      },
+                      "url": {
+                        "type": "url_slug",
+                        "name": "URL pattern",
+                        "value": "writing-good-error-messages"
+                      }
+                    }
+                  },
+                  "modular_content": {
+                    "jenny_brown": {
+                      "system": {
+                        "id": "59838cfd-ba15-4607-8e6a-d91931fc7ce6",
+                        "name": "Jenny Brown",
+                        "codename": "jenny_brown",
+                        "language": "en-US",
+                        "type": "author",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-05T11:33:54.5271987Z",
+                        "collection": "default",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "name": {
+                          "type": "text",
+                          "name": "Name",
+                          "value": "Jenny Brown"
+                        },
+                        "bio": {
+                          "type": "rich_text",
+                          "name": "Bio",
+                          "images": {},
+                          "links": {},
+                          "modular_content": [],
+                          "value": "<p>Jenny is here for all things wildlife and, newly, climate changes.</p>"
+                        }
+                      }
+                    },
+                    "n78ee300e_7a58_0117_819e_529b2294067b": {
+                      "system": {
+                        "id": "78ee300e-7a58-0117-819e-529b2294067b",
+                        "name": "78ee300e-7a58-0117-819e-529b2294067b",
+                        "codename": "n78ee300e_7a58_0117_819e_529b2294067b",
+                        "language": "en-US",
+                        "type": "blockquote",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-12-16T15:08:53.2391808Z"
+                      },
+                      "elements": {
+                        "quote": {
+                          "type": "text",
+                          "name": "Quote",
+                          "value": "Don't quote me on this."
+                        },
+                        "source": {
+                          "type": "text",
+                          "name": "Source",
+                          "value": "Jeff Loomis"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The specified content item is not published or was deleted.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryError"
+                },
+                "example": {
+                  "message": "The requested content item 'on_roasts' was not found.",
+                  "request_id": "|657e8eba55d8bf4a9a5ad9074038cd2e.813e828d_",
+                  "error_code": 100,
+                  "specific_code": 0
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>',\n});\n\nconst response = await deliveryClient.item('my_article')\n  .toPromise();"
+          },
+          {
+            "lang": "TypeScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { createDeliveryClient, IContentItem, Elements } from '@kontent-ai/delivery-sdk';\n\nconst deliveryClient = createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>',\n});\n\nexport type Article = IContentItem<{\n  title: Elements.TextElement;\n  summary: Elements.RichTextElement;\n  post_date: Elements.DateTimeElement;\n  teaser_image: Elements.AssetsElement;\n  related_articles: Article[];\n}>;\n\n// Create strongly typed models according to https://kontent.ai/learn/strongly-typed-models\nconst response = await deliveryClient.item<Article>('my_article')\n  .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets specific elements of an article\n// Create strongly typed models according to https://kontent.ai/learn/net-strong-types\nIDeliveryItemResponse<Article> response = await client.GetItemAsync<Article>(\"my_article\");\n\nArticle item = response.Item;"
+          },
+          {
+            "lang": "PHP",
+            "source": "// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\n\n$client = new DeliveryClient('<YOUR_PROJECT_ID>');\n\n$item = $client->getItem('my_article', (new QueryParams()));"
+          },
+          {
+            "lang": "Java",
+            "source": "// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n\n// Initializes a DeliveryClient\nDeliveryClient client = new DeliveryClient(\"<YOUR_PROJECT_ID>\");\n\n// Registers the model class for articles\n// Tip: Create strongly typed models according to https://kontent.ai/learn/strongly-typed-models\nclient.registerType(Article.class);\n\n// Gets an article\nCompletionStage<Article> article = client.getItem(\"my_article\", Article.class);"
+          },
+          {
+            "lang": "Ruby",
+            "source": "# Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '<YOUR_PROJECT_ID>'\ndelivery_client.item('my_article')\n               .execute do |response|\n                 item = response.item\n               end"
+          },
+          {
+            "lang": "iOS",
+            "source": "// Tip: Find more about Swift SDKs at https://kontent.ai/learn/ios\nimport KenticoKontentDelivery\n\nlet client = DeliveryClient.init(projectId: \"<YOUR_PROJECT_ID>\")\n\nlet customQuery = \"items/my_article\"\nclient.getItem(modelType: Article.self, customQuery: customQuery) { (isSuccess, deliveryItem, error) in\n     if isSuccess {\n        if let article = deliveryItem.item {\n            // Use your item here\n        }\n    } else {\n        if let error = error {\n            print(error)\n        }\n    }"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/items/my_article' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/items-feed": {
+      "get": {
+        "description": "Retrieve a dynamically paginated list of content items in your project. The items are ordered alphabetically by codename.\n\nIf the response comes with the `X-Continuation` header, it means that there are more pages to retrieve. To get the next page of results, send the `X-Continuation` header with your request as you received it.\n\nThis endpoint, unlike the [List content items](/learn/reference/delivery-api/#operation/list-content-items) endpoint, guarantees to enumerate all content items in the specified project. The `modular_content` object property will contain only components used in rich text elements in the API response. See [Linked content and components](/learn/reference/delivery-api/#tag/Linked-content-and-components) for more details.\n\nWe recommend using this endpoint for warming up your app's cache (that is getting all content into the cache after the app starts) or for exporting the content of your project.\n\n<div class=\"callout callout--tip\">\n\n<p><strong>Get only the items you need</strong></p>\n<p>To retrieve specific content items, use the <a data-item-id=\"b6cf1d73-471a-4f1e-b0a9-f0e041e2d905\" href=\"https://kontent.ai/learn/link-to/filtering_content\">filtering parameters</a> in your requests. For example, you can request items tagged with a taxonomy term, items of a specific type, or items modified in the past three days.</p>\n\n</div>\n",
+        "operationId": "enumerate-content-items",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/language"
+          },
+          {
+            "$ref": "#/components/parameters/elements"
+          },
+          {
+            "$ref": "#/components/parameters/order"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          },
+          {
+            "$ref": "#/components/parameters/x_continuation"
+          }
+        ],
+        "summary": "Enumerate content items",
+        "tags": [
+          "Content items"
+        ],
+        "responses": {
+          "200": {
+            "description": "A dynamically paginated feed of content items and components.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "items",
+                    "modular_content"
+                  ],
+                  "properties": {
+                    "items": {
+                      "description": "A list of content items\n",
+                      "items": {
+                        "$ref": "#/components/schemas/ContentItem"
+                      },
+                      "uniqueItems": true,
+                      "type": "array"
+                    },
+                    "modular_content": {
+                      "description": "A list of components used in rich text elements. See [Linked content and components](/learn/reference/delivery-api/#tag/Linked-content-and-components) for more details.\n",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/ContentItem",
+                        "x-additionalPropertiesName": "<ComponentCodename>"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "system": {
+                        "id": "4d4dc14d-8c7c-471f-b797-c6694c604964",
+                        "name": "About us",
+                        "codename": "about_us",
+                        "language": "en-US",
+                        "type": "article",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-17T07:22:51.6711216Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "title": {
+                          "type": "text",
+                          "name": "Title",
+                          "value": "Great news about us"
+                        },
+                        "body_copy": {
+                          "type": "rich_text",
+                          "name": "Body",
+                          "images": {},
+                          "links": {},
+                          "modular_content": [
+                            "n43768251_0eaa_01f6_69c2_f93047f076e1"
+                          ],
+                          "value": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n43768251_0eaa_01f6_69c2_f93047f076e1\"></object>\n<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>"
+                        },
+                        "author": {
+                          "type": "modular_content",
+                          "name": "Author",
+                          "value": [
+                            "jenny_brown"
+                          ]
+                        },
+                        "url": {
+                          "type": "url_slug",
+                          "name": "URL pattern",
+                          "value": "great-news-about-us"
+                        }
+                      }
+                    },
+                    {
+                      "system": {
+                        "id": "7b11fe14-6282-4daa-b901-e59e231cd93c",
+                        "name": "How to write error messages",
+                        "codename": "how_to_error_message",
+                        "language": "en-US",
+                        "type": "article",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-12-16T15:08:53.2391808Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "title": {
+                          "type": "text",
+                          "name": "Title",
+                          "value": "Writing good error messages"
+                        },
+                        "body_copy": {
+                          "type": "rich_text",
+                          "name": "Body",
+                          "images": {},
+                          "links": {},
+                          "modular_content": [
+                            "n78ee300e_7a58_0117_819e_529b2294067b"
+                          ],
+                          "value": "<p>The 3 most important things when writing error messages</p>\n<ol>\n  <li>Don’t abuse alerts for upselling or showing superfluous information. People will stop reading the messages that are actually important.</li>\n  <li>Don’t just assume people know about the context of a message. They might toggle between apps and see your message days after it happened. Always include enough information for users to make sense of it.</li>\n  <li>Use a friendly, non-technical, non-threatening tone of voice.</li>\n</ol>\n<p><em><strong>TL;DR Write actionable error messages that laypeople can understand.*</strong></em></p>\n<p><em>*Not sure if they do? Show them to a non-technical person and ask them to explain it back to you.</em></p>\n<p><em>Read the full story on </em><a href=\"https://medium.com/@thomasfuchs/how-to-write-an-error-message-883718173322\" data-new-window=\"true\" title=\"How to write a great error message\" target=\"_blank\" rel=\"noopener noreferrer\"><em>Medium</em></a><em>.</em></p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n78ee300e_7a58_0117_819e_529b2294067b\"></object>"
+                        },
+                        "author": {
+                          "type": "modular_content",
+                          "name": "Author",
+                          "value": [
+                            "jenny_brown"
+                          ]
+                        },
+                        "url": {
+                          "type": "url_slug",
+                          "name": "URL pattern",
+                          "value": "writing-good-error-messages"
+                        }
+                      }
+                    },
+                    {
+                      "system": {
+                        "id": "335d17ac-b6ba-4c6a-ae31-23c1193215cb",
+                        "name": "Simple article",
+                        "codename": "simple_article",
+                        "language": "en-US",
+                        "type": "simple_article",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-06T10:08:58.1048397Z",
+                        "workflow_step": "published"
+                      },
+                      "elements": {
+                        "title": {
+                          "type": "text",
+                          "name": "Title",
+                          "value": "My simple article"
+                        },
+                        "author": {
+                          "type": "modular_content",
+                          "name": "Author",
+                          "value": [
+                            "jenny_brown"
+                          ]
+                        },
+                        "body": {
+                          "type": "rich_text",
+                          "name": "Body",
+                          "images": {
+                            "04e4957f-08ed-4329-9c7a-0d7b7c6f3590": {
+                              "image_id": "04e4957f-08ed-4329-9c7a-0d7b7c6f3590",
+                              "description": "Person sitting on a wooden pier",
+                              "url": "https://assets-us-01.kc-usercontent.com:443/8d20758c-d74c-4f59-ae04-ee928c0816b7/6e38c039-ad00-47f3-a584-26252827655a/daylight.jpg",
+                              "width": 4000,
+                              "height": 2525
+                            }
+                          },
+                          "links": {
+                            "29b82988-fb9e-4327-a34b-b568cfaa39e9": {
+                              "codename": "my_article",
+                              "type": "article",
+                              "url_slug": "my-article"
+                            }
+                          },
+                          "modular_content": [
+                            "n499599bf_6bda_019e_d2f7_debd4589f3b8"
+                          ],
+                          "value": "<figure data-asset-id=\"04e4957f-08ed-4329-9c7a-0d7b7c6f3590\" data-image-id=\"04e4957f-08ed-4329-9c7a-0d7b7c6f3590\"><img src=\"https://assets-us-01.kc-usercontent.com:443/8d20758c-d74c-4f59-ae04-ee928c0816b7/6e38c039-ad00-47f3-a584-26252827655a/daylight.jpg\" data-asset-id=\"04e4957f-08ed-4329-9c7a-0d7b7c6f3590\" data-image-id=\"04e4957f-08ed-4329-9c7a-0d7b7c6f3590\" alt=\"Person sitting on a wooden pier\"></figure>\n<p>Quisque erat nisl, elementum ac consectetur eu, vulputate id metus. Cras placerat odio est, eu elementum eros pretium id. Donec a ornare dui. Pellentesque porta sed lorem eu accumsan. Pellentesque at dui ut urna gravida volutpat finibus sit amet leo. Duis et tempus nulla.</p>\n<object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n499599bf_6bda_019e_d2f7_debd4589f3b8\"></object>\n<p>Nullam odio ante, blandit ut posuere eu, eleifend vitae dui. Mauris sagittis, tortor et tempor eleifend, enim libero tempus velit, non hendrerit lacus sem eu lorem. Nulla cursus eu ante nec pulvinar.</p>\n<p>Nulla in facilisis tortor, quis pretium tortor. Vivamus quis laoreet nisi, non egestas massa. Maecenas hendrerit massa leo. Maecenas convallis dui vitae lorem suscipit efficitur. Maecenas vel dignissim erat, fringilla luctus lorem. Vivamus hendrerit ante et accumsan fringilla. Nullam <a data-item-id=\"29b82988-fb9e-4327-a34b-b568cfaa39e9\" href=\"\">quis</a> pellentesque erat.</p>"
+                        }
+                      }
+                    }
+                  ],
+                  "modular_content": {
+                    "n43768251_0eaa_01f6_69c2_f93047f076e1": {
+                      "system": {
+                        "id": "43768251-0eaa-01f6-69c2-f93047f076e1",
+                        "name": "43768251-0eaa-01f6-69c2-f93047f076e1",
+                        "codename": "n43768251_0eaa_01f6_69c2_f93047f076e1",
+                        "language": "en-US",
+                        "type": "tweet",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-17T07:22:51.6711216Z"
+                      },
+                      "elements": {
+                        "theme": {
+                          "type": "multiple_choice",
+                          "name": "Theme",
+                          "value": [
+                            {
+                              "name": "Light",
+                              "codename": "light"
+                            }
+                          ]
+                        },
+                        "tweet_link": {
+                          "type": "text",
+                          "name": "Tweet link",
+                          "value": "https://twitter.com/KenticoKontent/status/1222987911940972545"
+                        },
+                        "display_options": {
+                          "type": "multiple_choice",
+                          "name": "Display options",
+                          "value": [
+                            {
+                              "name": "Hide thread",
+                              "codename": "hide_thread"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "n499599bf_6bda_019e_d2f7_debd4589f3b8": {
+                      "system": {
+                        "id": "499599bf-6bda-019e-d2f7-debd4589f3b8",
+                        "name": "499599bf-6bda-019e-d2f7-debd4589f3b8",
+                        "codename": "n499599bf_6bda_019e_d2f7_debd4589f3b8",
+                        "language": "en-US",
+                        "type": "code_sample",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-02-06T10:08:58.1048397Z"
+                      },
+                      "elements": {
+                        "code": {
+                          "type": "text",
+                          "name": "Code",
+                          "value": "ReactDOM.render(\n  <h1>Hello, world!</h1>,\n  document.getElementById('root')\n);"
+                        },
+                        "programming_language": {
+                          "type": "multiple_choice",
+                          "name": "Programming language",
+                          "value": [
+                            {
+                              "name": "React",
+                              "codename": "react"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "n78ee300e_7a58_0117_819e_529b2294067b": {
+                      "system": {
+                        "id": "78ee300e-7a58-0117-819e-529b2294067b",
+                        "name": "78ee300e-7a58-0117-819e-529b2294067b",
+                        "codename": "n78ee300e_7a58_0117_819e_529b2294067b",
+                        "language": "en-US",
+                        "type": "blockquote",
+                        "collection": "default",
+                        "sitemap_locations": [],
+                        "last_modified": "2020-12-16T15:08:53.2391808Z"
+                      },
+                      "elements": {
+                        "quote": {
+                          "type": "text",
+                          "name": "Quote",
+                          "value": "Don't quote me on this."
+                        },
+                        "source": {
+                          "type": "text",
+                          "name": "Source",
+                          "value": "Jeff Loomis"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst client = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\n// Gets feed of all articles in the project\nconst response = await client.itemsFeed()\n  .type('article')\n  .toAllPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client; see https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets feed of all articles in the project \n// Tip: Create strongly typed models according to https://kontent.ai/learn/net-strong-types\nIDeliveryItemsFeed<Article> feed = client.GetItemsFeed<Article>(\n    new EqualsFilter(\"system.type\", \"article\")\n    );\n\nwhile (feed.HasMoreResults)\n{\n    IDeliveryItemsFeedResponse<Article> response = await feed.FetchNextBatchAsync();\n    foreach(Article article in response) {\n        // Do something with the content item, e.g. update cache\n        ProcessContentItem(article);\n    }\n}"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/items-feed?system.type=article' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/types/{type_codename}/elements/{element_codename}": {
+      "get": {
+        "description": "Retrieve a content element defined in a specific content type. Both must be specified by their codenames.\n",
+        "operationId": "retrieve-a-content-element",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/type_codename"
+          },
+          {
+            "$ref": "#/components/parameters/element_codename"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          }
+        ],
+        "summary": "Retrieve a content element",
+        "tags": [
+          "Content elements"
+        ],
+        "responses": {
+          "200": {
+            "description": "A content element object.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AssetElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CustomElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DateTimeElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LinkedItemsElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MultipleChoiceElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NumberElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SubpagesElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaxonomyElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TextElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RichTextElement"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UrlSlugElement"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The specified content element was not found.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryError"
+                },
+                "example": {
+                  "message": "The requested content element 'authors' was not found in content type 'article'.",
+                  "request_id": "|b8ec7d395e95c04e9511dbabd65bf4d1.a44b7400_",
+                  "error_code": 102,
+                  "specific_code": 0
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.element('article', 'title')\n  .toPromise();"
+          },
+          {
+            "lang": "TypeScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { createDeliveryClient } from '@kontent-ai/delivery-sdk';\n\nconst deliveryClient = createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.element('article', 'title')\n    .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets the model of specific element within a specific content type\nDeliveryElementResponse response = await client.GetContentElementAsync(\"article\", \"title\");\nIContentElement element = response.Element;"
+          },
+          {
+            "lang": "PHP",
+            "source": "// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\n\n$client = new DeliveryClient('<YOUR_PROJECT_ID>');\n\n$element = $client->getElement('article', 'title');"
+          },
+          {
+            "lang": "Java",
+            "source": "// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n\n// Initializes a DeliveryClient\nDeliveryClient client = new DeliveryClient(\"<YOUR_PROJECT_ID>\");\n\n// Gets the \"title\" content element from the \"article\" type using a simple request\nCompletionStage<Element> element = client.getContentTypeElement(\"article\", \"title\");"
+          },
+          {
+            "lang": "Ruby",
+            "source": "# Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '<YOUR_PROJECT_ID>'\ndelivery_client.element('article', 'title').execute do |response|\n  ele = response.element\nend"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/types/article/elements/title' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/types": {
+      "get": {
+        "description": "Retrieve a paginated list of content types in your project. By default, the API returns all content types ordered alphabetically by codename. You can customize pagination by specifying both the `skip` and `limit` query parameters.\n",
+        "operationId": "list-content-types",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/elements"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/limit_8cd54e2"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          }
+        ],
+        "summary": "List content types",
+        "tags": [
+          "Content types"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of content types.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "types",
+                    "pagination"
+                  ],
+                  "properties": {
+                    "types": {
+                      "items": {
+                        "$ref": "#/components/schemas/ContentType"
+                      },
+                      "uniqueItems": true,
+                      "type": "array"
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.types()\n  .limitParameter(3)\n  .toPromise();"
+          },
+          {
+            "lang": "TypeScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { createDeliveryClient } from '@kontent-ai/delivery-sdk';\n\nconst deliveryClient = createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.types()\n  .limitParameter(3)\n  .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets 3 content types\nIDeliveryTypeListingResponse response = await client.GetTypesAsync(\n    new LimitParameter(3)\n    );\n\nIList<IContentType> types = response.Types;"
+          },
+          {
+            "lang": "PHP",
+            "source": "// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\nuse Kentico\\Kontent\\Delivery\\QueryParams;\n\n$client = new DeliveryClient('<YOUR_PROJECT_ID>');\n\n$types = $client->getTypes((new QueryParams())\n            ->limit(3));"
+          },
+          {
+            "lang": "Java",
+            "source": "// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n\n// Initializes a DeliveryClient\nDeliveryClient client = new DeliveryClient(\"<YOUR_PROJECT_ID>\");\n\n// Gets 3 content types\nCompletionStage<ContentTypesListingResponse> types = client.getTypes(\n    DeliveryParameterBuilder.params()\n        .page(null, 3)\n        .build()\n    );"
+          },
+          {
+            "lang": "Ruby",
+            "source": "# Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '<YOUR_PROJECT_ID>'\ndelivery_client.types\n               .limit(3)\n               .execute do |response|\n                 types = response.types\n               end"
+          },
+          {
+            "lang": "iOS",
+            "source": "// Tip: Find more about Swift SDK at https://kontent.ai/learn/ios\nimport KenticoKontentDelivery\n \nlet client = DeliveryClient.init(projectId: \"<YOUR_PROJECT_ID>\")\n \nclient.getContentTypes(limit: 3, completionHandler: { (isSuccess, contentTypesResponse, error) in\n    if !isSuccess {\n        fail( \"Response is not successful. Error: \\(String(describing: error))\" )\n    }\n     \n    if let response = contentTypesResponse {\n    // use content types here\n    }\n})"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/types?limit=3' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/types/{type_codename}": {
+      "get": {
+        "description": "Retrieve a specific content type.\n",
+        "operationId": "retrieve-a-content-type",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/type_codename"
+          },
+          {
+            "$ref": "#/components/parameters/elements"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          }
+        ],
+        "summary": "Retrieve a content type",
+        "tags": [
+          "Content types"
+        ],
+        "responses": {
+          "200": {
+            "description": "A content type object.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentType"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The specified content type was not found.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryError"
+                },
+                "example": {
+                  "message": "The requested content type 'articles' was not found.",
+                  "request_id": "|8aa7f93878023f469d2b587e4fb07f85.ddb7bb71_",
+                  "error_code": 101,
+                  "specific_code": 0
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.type('article')\n  .toPromise();"
+          },
+          {
+            "lang": "TypeScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { createDeliveryClient } from '@kontent-ai/delivery-sdk';\n\nconst deliveryClient = createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.type('article')\n    .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets a specific content type\nIDeliveryTypeResponse response = await client.GetTypeAsync(\"article\");\nIContentType type = response.Type;"
+          },
+          {
+            "lang": "PHP",
+            "source": "// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\n\n$client = new DeliveryClient('<YOUR_PROJECT_ID>');\n\n$type = $client->getType('article');"
+          },
+          {
+            "lang": "Java",
+            "source": "// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n\n// Initializes a DeliveryClient\nDeliveryClient client = new DeliveryClient(\"<YOUR_PROJECT_ID>\");\n\n// Gets a content type\nCompletionStage<ContentType> type = client.getType(\"article\");"
+          },
+          {
+            "lang": "Ruby",
+            "source": "# Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '<YOUR_PROJECT_ID>'\ndelivery_client.type('article').execute do |response|\n  type = response.type\nend"
+          },
+          {
+            "lang": "iOS",
+            "source": "// Tip: Find more about Swift SDKs at https://kontent.ai/learn/ios\nimport KenticoKontentDelivery\n \nlet client = DeliveryClient.init(projectId: \"<YOUR_PROJECT_ID>\")\n \nclient.getContentType(name: \"article\", completionHandler: { (isSuccess, contentType, error) in\n    if !isSuccess {\n        fail( \"Response is not successful. Error: \\(String(describing: error))\" )\n    }\n     \n    if let type = contentType {\n    // use content type here\n    }\n})"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/types/article' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/languages": {
+      "get": {
+        "description": "Retrieve a list of active languages from your project. By default, the API returns all languages ordered alphabetically by codename.\n\n<div class=\"callout callout--tip\">\n\n<p><strong>Get only the languages you need</strong></p>\n<p>To retrieve specific languages, use the <a data-item-id=\"b6cf1d73-471a-4f1e-b0a9-f0e041e2d905\" href=\"https://kontent.ai/learn/link-to/filtering_content\">filtering parameters</a> in your requests. For example, you can request two specific languages (using the <code>[in]</code> filter) or all but one language (using the <code>[neq]</code> filter).</p>\n\n</div>\n",
+        "operationId": "list-languages",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/limit_8cd54e2"
+          },
+          {
+            "$ref": "#/components/parameters/order"
+          }
+        ],
+        "summary": "List languages",
+        "tags": [
+          "Languages"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of active languages matching the specified parameters.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "languages": {
+                      "description": "Active languages available in the project.\n",
+                      "items": {
+                        "$ref": "#/components/schemas/Language"
+                      },
+                      "uniqueItems": true,
+                      "type": "array"
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  },
+                  "type": "object"
+                },
+                "example": {
+                  "languages": [
+                    {
+                      "system": {
+                        "id": "00000000-0000-0000-0000-000000000000",
+                        "name": "Default project language",
+                        "codename": "default"
+                      }
+                    },
+                    {
+                      "system": {
+                        "id": "614d82f5-c16c-465b-a34b-a37a1b416d12",
+                        "name": "German",
+                        "codename": "de-DE"
+                      }
+                    },
+                    {
+                      "system": {
+                        "id": "de7bffee-659e-495f-b462-073974c88147",
+                        "name": "English",
+                        "codename": "en-US"
+                      }
+                    }
+                  ],
+                  "pagination": {
+                    "skip": 0,
+                    "limit": 3,
+                    "count": 3,
+                    "next_page": "https://deliver.kontent.ai/<YOUR_PROJECT_ID>/languages?limit=3&skip=3"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.languages()\n  .limitParameter(3)\n  .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets 3 languages\nIDeliveryLanguageListingResponse response = await deliveryClient.GetLanguagesAsync(\n    new List<IQueryParameter>() {\n        new LimitParameter(3)\n    });\n\nIList<ILanguage> languages = response.Languages;"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/languages?limit=3' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/taxonomies": {
+      "get": {
+        "description": "Retrieve a paginated list of taxonomy groups in your project. By default, the API returns all taxonomy groups ordered alphabetically by codename. You can customize pagination by specifying both the `skip` and `limit` query parameters.\n",
+        "operationId": "list-taxonomy-groups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/limit_8cd54e2"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          }
+        ],
+        "summary": "List taxonomy groups",
+        "tags": [
+          "Taxonomy groups"
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of taxonomy groups.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "taxonomies",
+                    "pagination"
+                  ],
+                  "properties": {
+                    "taxonomies": {
+                      "description": "A list of taxonomy groups.\n",
+                      "items": {
+                        "$ref": "#/components/schemas/TaxonomyGroup"
+                      },
+                      "uniqueItems": true,
+                      "type": "array"
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.taxonomies()\n  .limitParameter(3)\n  .toPromise();"
+          },
+          {
+            "lang": "TypeScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { createDeliveryClient } from '@kontent-ai/delivery-sdk';\n\nconst deliveryClient = createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.taxonomies()\n    .limitParameter(3)\n    .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets 3 taxonomy groups\nIDeliveryTaxonomyListingResponse response = await client.GetTaxonomiesAsync(\n    new LimitParameter(3)\n    );\n\nIList<ITaxonomyGroup> taxonomies = response.Taxonomies;"
+          },
+          {
+            "lang": "PHP",
+            "source": "// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\nuse Kentico\\Kontent\\Delivery\\QueryParams;\n\n$client = new DeliveryClient('<YOUR_PROJECT_ID>');\n\n$taxonomyGroups = $client->getTaxonomies((new QueryParams())\n            ->limit(3));"
+          },
+          {
+            "lang": "Java",
+            "source": "// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n\n// Initializes a DeliveryClient\nDeliveryClient client = new DeliveryClient(\"<YOUR_PROJECT_ID>\");\n\n// Gets 3 taxonomy groups\nCompletionStage<List<TaxonomyGroup>> taxonomies = client.getTaxonomyGroups(\n    DeliveryParameterBuilder.params()\n        .page(null, 3)\n        .build()\n    ).thenApply(taxonomyGroupListingResponse -> taxonomyGroupListingResponse.getTaxonomies());"
+          },
+          {
+            "lang": "Ruby",
+            "source": "# Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '<YOUR_PROJECT_ID>'\ndelivery_client.taxonomies\n               .limit(3)\n               .execute do |response|\n                 groups = response.taxonomies\n               end"
+          },
+          {
+            "lang": "iOS",
+            "source": "// Tip: Find more about Swift SDKs at https://kontent.ai/learn/ios\nimport KenticoKontentDelivery\n\nlet client = DeliveryClient.init(projectId: \"<YOUR_PROJECT_ID>\")\n\nclient.getTaxonomies(completionHandler: { (isSuccess, deliveryItems, error) in\n   if isSuccess {\n       if let taxonomies = deliveryItems?.items {\n        // use your taxonomies here\n       }\n    } else {\n         if let error = error {\n             print(error)\n         }\n    }\n})"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/taxonomies?limit=3' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    },
+    "/{project_id}/taxonomies/{taxonomy_group_codename}": {
+      "get": {
+        "description": "Retrieve a specific taxonomy group specified by codename.\n",
+        "operationId": "retrieve-a-taxonomy-group",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/project_id"
+          },
+          {
+            "$ref": "#/components/parameters/taxonomy_group_codename"
+          },
+          {
+            "$ref": "#/components/parameters/x_kc_wait_for_loading_new_content"
+          }
+        ],
+        "summary": "Retrieve a taxonomy group",
+        "tags": [
+          "Taxonomy groups"
+        ],
+        "responses": {
+          "200": {
+            "description": "A taxonomy group object.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyGroup"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The specified taxonomy group was not found.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryError"
+                },
+                "example": {
+                  "message": "The requested taxonomy group 'persona' was not found.",
+                  "request_id": "|a0d6c1ee9d2bc943bdd92e57e9dc97c4.4f33764a_",
+                  "error_code": 104,
+                  "specific_code": 0
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nconst KontentDelivery = require('@kontent-ai/delivery-sdk');\n\nconst deliveryClient = KontentDelivery.createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.taxonomy('personas')\n  .toPromise();"
+          },
+          {
+            "lang": "TypeScript",
+            "source": "// Tip: Find more about JS/TS SDKs at https://kontent.ai/learn/javascript\nimport { createDeliveryClient } from '@kontent-ai/delivery-sdk';\n\nconst deliveryClient = createDeliveryClient({\n  projectId: '<YOUR_PROJECT_ID>'\n});\n\nconst response = await deliveryClient.taxonomy('personas')\n    .toPromise();"
+          },
+          {
+            "lang": ".NET",
+            "source": "// Tip: Find more about .NET SDKs at https://kontent.ai/learn/net\nusing Kontent.Ai.Delivery;\n\n// Creates an instance of the delivery client\n// ProTip: Use DI for this in your apps https://kontent.ai/learn/net-register-client\nIDeliveryClient client = DeliveryClientBuilder\n      .WithProjectId(\"<YOUR_PROJECT_ID>\")\n      .Build();\n\n// Gets a specific taxonomy group\nIDeliveryTaxonomyResponse response = await client.GetTaxonomyAsync(\"personas\");\nITaxonomyGroup taxonomy = response.Taxonomy;"
+          },
+          {
+            "lang": "PHP",
+            "source": "// Tip: Find more about PHP SDKs at https://kontent.ai/learn/php\n// Defined by Composer to include required libraries\nrequire __DIR__ . '/vendor/autoload.php';\n\nuse Kentico\\Kontent\\Delivery\\DeliveryClient;\n\n$client = new DeliveryClient('<YOUR_PROJECT_ID>');\n\n$taxonomyGroup = $client->getTaxonomy('personas');"
+          },
+          {
+            "lang": "Java",
+            "source": "// Tip: Find more about Java SDK at https://kontent.ai/learn/java\nimport kentico.kontent.delivery.*;\n\n// Initializes a DeliveryClient\nDeliveryClient client = new DeliveryClient(\"<YOUR_PROJECT_ID>\");\n\n// Gets a specific taxonomy group\nCompletionStage<TaxonomyGroup> personas = client.getTaxonomyGroup(\"personas\");"
+          },
+          {
+            "lang": "Ruby",
+            "source": "# Tip: Find more about Ruby SDKs at https://kontent.ai/learn/ruby\nrequire 'delivery-sdk-ruby'\n\ndelivery_client = Kentico::Kontent::Delivery::DeliveryClient.new project_id: '<YOUR_PROJECT_ID>'\ndelivery_client.taxonomy('personas').execute do |response|\n  group = response.taxonomy\nend"
+          },
+          {
+            "lang": "iOS",
+            "source": "// Tip: Find more about Swift SDKs at https://kontent.ai/learn/ios\nimport KenticoKontentDelivery\n\nlet client = DeliveryClient.init(projectId: \"<YOUR_PROJECT_ID>\")\n\nclient.getTaxonomyGroup(taxonomyGroupName: \"personas\", completionHandler: { (isSuccess, deliveryItem, error) in\n   if isSuccess {\n       if let taxonomyGroup = deliveryItems.item {\n        // use your taxonomy group here\n       }\n    } else {\n         if let error = error {\n             print(error)\n         }\n    }\n})"
+          },
+          {
+            "lang": "REST",
+            "source": "curl --request GET \\\n  --url 'https://deliver.kontent.ai/<YOUR_PROJECT_ID>/taxonomies/personas' \\\n  --header 'content-type: application/json'"
+          }
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Delivery API",
+      "url": "https://deliver.kontent.ai"
+    },
+    {
+      "description": "Delivery Preview API",
+      "url": "https://preview-deliver.kontent.ai"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Try out any of the [Kontent.ai APIs with Postman](/learn/tutorials/develop-apps/get-started/postman-collection/)\\! 📫 The Postman collection is regularly updated and contains endpoints for all Kontent.ai APIs, just like in the API references.\n",
+      "name": "Try the API with Postman"
+    },
+    {
+      "description": "We offer the following SDKs to help you interact with Delivery API. However, you don't need an SDK to use the API.\n* [JavaScript/TypeScript SDK](/learn/tutorials/develop-apps/overview/?tech=javascript)\n* [.NET SDK](/learn/tutorials/develop-apps/overview/?tech=dotnet)\n* [Java SDK](/learn/tutorials/develop-apps/overview/?tech=java)\n* [PHP SDK](/learn/tutorials/develop-apps/overview/?tech=php)\n* [Swift SDK](/learn/tutorials/develop-apps/overview/?tech=ios)\n* [Ruby SDK](/learn/tutorials/develop-apps/overview/?tech=ruby)\n\nIf you want to create your own SDK, see our [guidelines for SDK developers](https://github.com/Kentico/Home/wiki/Guidelines-for-SDK-developers \"Guidelines for SDK developers\").\n",
+      "name": "SDKs"
+    },
+    {
+      "description": "The Delivery API uses [Fastly](https://www.fastly.com/) as its Content Delivery Network (CDN). The CDN stores responses to every successful API request in the CDN's cache.\n\nYour first request to the Delivery API is uncached. Such request goes through the CDN directly to the Delivery API. The response from the Delivery API is then stored in the CDN. If you repeat the same request, you get a cached response from the CDN.\n\nThe response stays in the cache for as long as the requested content in your Kontent.ai project stays the same. If the content changes, the cached response is removed from the cache.\n\nFor example, if you request a content item A from the API, you get a response with the contents of content item A and its [linked items](/learn/reference/delivery-api/#tag/Linked-content-and-components). That response with content item A is cached in the CDN. If you make changes to content item A, the cached response is removed from the cache. If the CDN had previously cached other responses that contained content of content item A, these responses are removed from the cache as well.\n",
+      "name": "How the API caches your content"
+    },
+    {
+      "description": "## API requests limit\n\n\nRequests made to the Delivery API count towards the overall *API Calls* limit set in our [Fair Use Policy](https://kontent.ai/pricing/fup).\n\nRequests made to the [Delivery Preview API](#section/Production-vs.-Preview), which lets you preview unpublished content, do NOT count towards the *API Calls* limit.\n\n## Change processing time\n\n\nThe Delivery API processes changes to your content items in sequential order, one after another. In high-volume scenarios, this can lead to delays between making a change and seeing the results of that change in the API. See the following example scenarios for details.\n\n**Example A: Editing and publishing content items**\n\nIf you publish a content item, the API processes this change in a few seconds. When publishing larger amounts of content, there can be a delay in availability of that content in the API.\n\nFor example, if you publish 100 content items, the first item will be available a few minutes sooner than the last one.\n\n**Example B: Editing content types**\n\nWhen you change a content type, the API needs to process all content items based on that type. If your changes affect hundreds or thousands of content items, the API recalculates the content of each item. While this is happening, any new changes to content items need to wait before being processed by the API.\n\nFor example, imagine you have an *Article* content type with 100,000 content items based on that type. If you add an element to the content type, the API goes through the items and begins updating their content. Given the high number of items, this process can take up to a few hours.\n\nUntil the API finishes processing the *Article* items, any subsequent content changes need to wait. If you publish a content item right after modifying the *Article* content type, the published item appears in the API only after the type change was fully processed.\n\n**Example C: Changing project localization settings**\n\nWe strongly recommend against changing language codenames on live projects with lots of content. This action might lead to temporary inconsistencies that might affect content in your web app.\n\nIf you change a [project language](/learn/tutorials/manage-kontent-ai/projects/set-up-languages/)'s codename, the API needs to process all items that have content in that language. Until this change is fully processed, the API might return some items with the old language codename and some items with the new language codename.\n\n## Rate limitation\n\n\nRate limits specify the number of requests you can make to the Delivery API within a specific time window.\n\nFor [cached requests served from our CDN](/learn/reference/delivery-api/#tag/How-the-API-caches-your-content), we don't enforce any rate limits. These are repeated requests for cached data. You can make an unlimited number of requests to the CDN.\n\nFor uncached requests that reach the Delivery API, we enforce a rate limitation of 100 requests per second and 2000 requests per minute. These are unique requests for uncached data.\n\nWhen you reach the rate limit, the API rejects the request and responds with a [429 HTTP error](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429 \"Too Many Requests\"). This error comes with the [`Retry-After` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) that tells you how many seconds you need to wait before retrying your request. Each failed request is perfectly safe to retry. If you begin to receive 429 errors, reduce the frequency of your requests.\n\n## Response size\n\n\nWhen you [request a single content item](/learn/reference/delivery-api/#operation/retrieve-a-content-item) or [list of items](/learn/reference/delivery-api/#operation/list-content-items), the Delivery API limits the maximum number of items returned within a response to 2000 items. This number covers both the items that directly match the specified query and the [linked items](/learn/reference/delivery-api/#tag/Linked-content-and-components) returned in the response's `modular_content` property.\n\nYou can find whether your requests are close to the limit by looking at the `X-Request-Charge` header.\n\nIf the `X-Request-Charge` value of your requests exceeds 1000, we recommend applying more specific [filters](/learn/reference/delivery-api/#tag/Filtering-content) and checking if a lower value for the [`depth` parameter](#tag/Linked-content-and-components/linked-content-depth) works for you. Fewer items returned per response means shorter response times and better performance for your app.\n",
+      "name": "API limitations"
+    },
+    {
+      "description": "The API returns standard HTTP status codes to indicate the success or failure of a request. In general, status codes in the `2xx` range indicate a successful request, status codes in the `4xx` range indicate errors caused by an incorrect input (for example, providing incorrect API key), and status codes in the `5xx` range indicate an error on our side.\n\n## HTTP status codes summary\n\n\n<table>\n\n<tbody>\n\n<tr>\n\n<td>\n\n**Status code**\n\n</td>\n\n<td>\n\n**Description**\n\n</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`400` **Bad Request**\n\n</td>\n\n<td>The request was not understood. Check your request for a missing required parameter or an invalid query parameter value.</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`401` **Unauthorized**\n\n</td>\n\n<td>The provided API key is invalid or missing.</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`403` **Forbidden**\n\n</td>\n\n<td>The provided API key is invalid for the requested project.</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`404` **Not Found**\n\n</td>\n\n<td>The requested resource doesn't exist. Try checking the resource name for typos.</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`405` **Method Not Allowed**\n\n</td>\n\n<td>The requested HTTP method is not supported for the specified resource.</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`429` **Too Many Requests**\n\n</td>\n\n<td>\n\nThe rate limit for the API has been exceeded. Try your request again after a few seconds as specified in the `Retry-After` header.\n\n</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`5xx` **Internal Error** or **Service Unavailable**\n\n</td>\n\n<td>Something went wrong on our side. Try your request again after a few seconds and use a retry policy.</td>\n\n</tr>\n\n</tbody>\n\n</table>\n\n## Resolving errors\n\n\nFor troubleshooting failed requests, the API provides error messages defined in a consumable format to help you identify and fix the issue.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/DeliveryError\" showReadOnly={true} showWriteOnly={true} /> \n\nIf you cannot identify and resolve an issue with your API call, you can contact us with the response status and the request ID you get in the error response.\n",
+      "name": "Errors"
+    },
+    {
+      "description": "By default, the Delivery API does not require authentication. This means your assets and published content items are publicly available.\n\nYou can enable secure access for your project to require authenticated requests. You'll then need to use an API key when getting content items.\n\nBecause the Delivery API is designed for continuous retrieval of published content, there is **no expiration date** for the Primary or Secondary API keys. The API keys are **scoped per project**. This means you need a separate API key for each project in Kontent.ai. All users within a single project share the same Delivery API keys.\n\nIf you have [advanced asset management](/learn/tutorials/manage-kontent-ai/assets/manage-assets/), you can also set up secure assets for your project. For more details, check how to [restrict public access](/learn/tutorials/develop-apps/build-strong-foundation/restrict-public-access/).\n",
+      "name": "Secure access"
+    },
+    {
+      "description": "The Delivery API with [secure access](/learn/reference/delivery-api/#tag/Secure-access) enabled and the Delivery Preview API both use two concurrent API keys, Primary and Secondary. In certain situations, you may need to revoke one of these keys and generate a new one. For example, when you suspect unauthorized key use or when a developer with access to the API key has left your company.\n\nFor situations like these, one or both of the API keys can be regenerated. Generating a new key will replace the old key. This process can take up to a couple of minutes. Requests made with a revoked API key will then receive a `401 Unauthorized` HTTP status in the response.\n\n<div class=\"callout callout--tip\">\n\n<p><strong>Keep your API keys secure</strong></p>\n<p>There is no expiration date for the Primary or Secondary API key. However, we recommend that you regenerate the API keys periodically to prevent the keys from being compromised.</p>\n<p>Learn more in <a data-item-id=\"961f2179-e62c-4927-a7ad-e270d55fb61f\" href=\"https://kontent.ai/learn/link-to/securing_public_access\">Securing public access</a> and <a data-item-id=\"c62f9339-3ba4-4a02-98a3-f4920cb591be\" href=\"https://kontent.ai/learn/link-to/previewing_unpublished_content\">Configuring content preview</a>.</p>\n\n</div>\n",
+      "name": "Revoking API keys"
+    },
+    {
+      "description": "When [getting content items](/learn/reference/delivery-api/#operation/list-content-items), you can filter your items by building query parameters from content elements and system properties. Check our [tutorial on filtering content items](/learn/tutorials/develop-apps/get-content/filter-content-items-examples/), which covers the basic use of common filtering parameters. Or read on for a deep dive.\n\n<div class=\"callout callout--info\">\n\n<p>Filtering does not apply to content items returned in the <a data-item-id=\"286dbb0e-f673-494f-abfd-3f39c7ec3446\" href=\"https://kontent.ai/learn/link-to/linked_content_and_components\"><code>modular_content</code> object property</a>.</p>\n\n</div>\n\nIf you want to get only a specific set of elements from content items, use [projection](/learn/reference/delivery-api/#tag/Projection).\n\n### Filtering by system values\n\nTo filter by system property values, you need to use a query parameter in the `system.<property_name>` format. The system properties are `id`, `collection`, `name`, `codename`, `language`, `type`, `last_modified`, and `workflow_step`. For example, to retrieve only content items based on the *Article* content type, use `system.type=article` as a query parameter.\n\n### Filtering by element values\n\nTo filter by [content element](/learn/reference/delivery-api/#tag/Content-elements) values, you need to use a query parameter in the `elements.<element_codename>=<value>` format. For example, to retrieve only content items whose number element named Price has a value of 16, use `elements.price=16` as a query parameter.\n\n### Joining multiple query parameters\n\nYou can join multiple query parameters using the `&` character. Queries with two or more filtering parameters are more restrictive because the individual query parameters are merged with a logical conjunction (AND).\n\nFor example, the query `system.type=article&elements.category[contains]=nature` will return Article [content items tagged](/learn/tutorials/write-and-collaborate/create-content/tag-your-content/) with the term *Nature*.\n\n### Filtering operators\n\nYou can use the following filtering operators with both the system properties and element values.\n\n<div class=\"callout callout--info\">\n\n<p>All operators are <strong>case-sensitive</strong>.</p>\n\n</div>\n\n<table>\n\n<tbody>\n\n<tr>\n\n<td>\n\n**Operator**\n\n</td>\n\n<td>\n\n**Description**\n\n</td>\n\n<td>\n\n**Example**\n\n</td>\n\n<td>\n\n**Use with**\n\n</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[eq]`(same as `=`)\n\n</td>\n\n<td>Property value equals the specified value.</td>\n\n<td>\n\n`system.type=article`\n\n`system.type[eq]=article`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[neq]`\n\n</td>\n\n<td>Property value does not equal the specified value.</td>\n\n<td>\n\n`system.type[neq]=article`\n\n`system.workflow_step[neq]=archived`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[empty]`\n\n</td>\n\n<td>Property value is empty.</td>\n\n<td>\n\n`elements.title[empty]`\n\n`elements.author[empty]`\n\nFor [rich text](#section/Rich-text-element), use the equals operator, `elements.content[eq]=<p><br></p>`.\n\n</td>\n\n<td>Simple types and arrays</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[nempty]`\n\n</td>\n\n<td>Property value is not empty.</td>\n\n<td>\n\n`elements.title[nempty]`\n\n</td>\n\n<td>\n\nSimple types and arrays\n\n</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[lt]`\n\n</td>\n\n<td>\n\nProperty value is less than the specified value.\\\nMore in [Comparing values](#tag/Filtering-content/comparing-values).\n\n</td>\n\n<td>\n\n`\nelements.price[lt]=10`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[lte]`\n\n</td>\n\n<td>\n\nProperty value is less than or equal to the specified value.\\\nMore in [Comparing values](#tag/Filtering-content/comparing-values).\n\n</td>\n\n<td>\n\n`\nelements.price[lte]=4`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[gt]`\n\n</td>\n\n<td>\n\nProperty value is greater than the specified value.\\\nMore in [Comparing values](#tag/Filtering-content/comparing-values).\n\n</td>\n\n<td>\n\n`\nelements.price[gt]=10`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[gte]`\n\n</td>\n\n<td>\n\nProperty value is greater than or equal to the specified value.\\\nMore in [Comparing values](#tag/Filtering-content/comparing-values).\n\n</td>\n\n<td>\n\n`\nelements.price[gt]=10`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[range]`\n\n</td>\n\n<td>\n\nProperty value falls within the specified range of two values, both inclusive.\\\nMore in [Comparing values](#tag/Filtering-content/comparing-values).\n\n</td>\n\n<td>\n\n`\nelements.price[range]=10.5,50`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[in]`\n\n</td>\n\n<td>Property value is in the specified list of values.</td>\n\n<td>\n\n`\nelements.price[in]=8.5,9,10.5`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[nin]`\n\n</td>\n\n<td>Property value is not in the specified list of values.</td>\n\n<td>\n\n`system.type[nin]=home,page`\n\n</td>\n\n<td>Simple types</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[contains]`\n\n</td>\n\n<td>\n\nProperty with an array of values contains the specified value.\\\nThe `[contains]` operator cannot be used on strings.\n\n</td>\n\n<td>\n\n`elements.category[contains]=nature`\n\n`elements.custom[contains]=ABC`\n\n</td>\n\n<td>Arrays</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[any]`\n\n</td>\n\n<td>Property with an array of values contains at least one value from the specified list of values.</td>\n\n<td>\n\n`elements.category[any]=technology,nature`\n\n</td>\n\n<td>Arrays</td>\n\n</tr>\n\n<tr>\n\n<td>\n\n`[all]`\n\n</td>\n\n<td>Property with an array of values contains all of the specified values.</td>\n\n<td>\n\n`elements.category[all]=technology,mobile`\n\n</td>\n\n<td>Arrays</td>\n\n</tr>\n\n</tbody>\n\n</table>\n\n### Arrays vs. simple types\n\nYou can use the `[contains]`, `[any]`, and `[all]` filtering operators only on arrays. The content elements that support these operators are [custom elements](#section/Custom-element) (see limitations below), [linked items](#section/Linked-items-element), [multiple choice](#section/Multiple-choice-element), and [taxonomy](#section/Taxonomy-element).\n\nFor custom elements, the `[contains]`, `[any]`, and `[all]` filters work only if the element's value is a stringified array of strings such as \"[\\\\\"DE\\\\\",\\\\\"US\\\\\",\\\\\"UK\\\\\"]\". The `[contains]`, `[any]`, and `[all]` operators can NOT be used on asset elements.\n\n### Comparing values\n\nThe `[lt]`, `[lte]`, `[gt]`, `[gte]`, and `[range]` filtering operators work best with numbers. For example, you can retrieve products with price larger or equal to 15 by using `elements.price[gte]=15`.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Filtering by date-time values</strong></p>\n<p>Properties that store dates are represented as strings. For example, this includes the <code>last_modified</code> system property and date &amp; time <a data-item-id=\"ea9768d1-bd2f-4027-bb5e-5cd9c85ea360\" href=\"https://kontent.ai/learn/link-to/content_elements\">content elements</a>.</p>\n<p>If you use filtering operators on properties with string values, the Delivery API tries to perform a string comparison. For instance, you can retrieve content items modified during February and March by using a query such as <code>system.last_modified[range]=2020-02-01,2020-04-01</code>, specifying the start date within the range and end date outside the range.</p>\n\n</div>\n",
+      "name": "Filtering content"
+    },
+    {
+      "description": "When [getting content items](/learn/reference/delivery-api/#operation/list-content-items) or [content types](/learn/reference/delivery-api/#operation/list-content-types), you can specify which elements to return by using the `elements` query parameter.\n* For items, the parameter applies to content items returned within both the `items` array and `modular_content` object property.\n* For types, the parameter applies to content types returned within the `types` array.\n\n### Examples\n\nBy using `elements=title` as a query parameter, the `elements` property in each content item will contain only the element with the codename `title`, or, if the item doesn't have an element with such codename, the `elements` property will be empty.\n\nFor multiple elements, you can use a query parameter such as `elements=title,summary,related_articles` to retrieve only the elements with codenames `title`, `summary`, and `related_articles`.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Excluding the system properties</strong></p>\n<p>Projection does not apply to the system properties. This means that you cannot omit the <code>system</code> object from the response using any query.</p>\n\n</div>\n",
+      "name": "Projection"
+    },
+    {
+      "description": "With the Kontent.ai platform, you can [compose and structure](/learn/tutorials/write-and-collaborate/structure-your-content/structure-your-content/) your content using rich text and linked items elements.\n* [Linked items elements](#section/Linked-items-element) are used to reference other content items.\n* [Rich text elements](#section/Rich-text-element) are used to compose your content with text, images, components, and content items. Components and content items are useful for inserting structured content into a specific point in the text.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Components 101</strong></p>\n<p><a href=\"#section/Rich-text-element\">Rich text elements</a> can contain components.</p>\n<ul>\n  <li>A component is a single-use content item.</li>\n  <li>It has the same structure as a <a data-item-id=\"0768ece4-91da-42a4-bab0-2086c66f9953\" href=\"https://kontent.ai/learn/link-to/content_items\">content item</a>.</li>\n  <li>Unlike a content item, a component only exists inside its rich text element.</li>\n  <li>It is based on a specific content type.</li>\n</ul>\n\n</div>\n\n### Retrieve linked content\n\nWhen [retrieving items](/learn/reference/delivery-api/#operation/list-content-items) using the Delivery API, the contents of *all components and content items in the rich text and linked items elements* are stored in the `modular_content` object property of the API response.\n\nWhen [enumerating the items](/learn/reference/delivery-api/#operation/enumerate-content-items) in your project using the Delivery API, the `modular_content` object property will contain only components, not content items used in linked items elements.\n\nThe contents of `modular_content`, that is the individual components and content items, are not ordered. See [linked items](#section/Linked-items-element) and [rich text](#section/Rich-text-element) elements for details on how ordering is done within the elements.\n\nFor historical reasons, the property is called \"modular_content\" instead of \"linked_content\".\n\n### Linked content depth\n\n**Content items** can reference other content items using [linked items](#section/Linked-items-element) or [rich text](#section/Rich-text-element) elements. These linked items can reference other items recursively. By default, the API returns only one level of linked items.\n* To include more than one level of linked items in response, set the `depth` query parameter to 2 or more.\n* To exclude all linked items, set the `depth` query parameter to 0.\n\nWhen retrieving content, linked items cannot be [filtered](/learn/reference/delivery-api/#tag/Filtering-content).\n\n**Components** are not affected by the `depth` query parameter as they are an integral part of their rich text element. Components are always present in the API response. Components can be nested up to six levels deep.\n",
+      "name": "Linked content and components"
+    },
+    {
+      "description": "Content items represent specific pieces of content based on a specific content type. To retrieve specific items from your project, either [provide a codename for one item](/learn/reference/delivery-api/#operation/retrieve-a-content-item) or [filter all items using parameters](/learn/reference/delivery-api/#tag/Filtering-content). By default, the Delivery API returns content items in the [default language](/learn/tutorials/manage-kontent-ai/projects/set-up-languages/).\n\n## Content item object\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ContentItem\" showReadOnly={true} showWriteOnly={true} /> \n",
+      "name": "Content items"
+    },
+    {
+      "description": "When getting [content items](/learn/reference/delivery-api/#tag/Content-items) or [content types](/learn/reference/delivery-api/#tag/Content-types), you get the `elements` object property as a part of the retrieved item or type.\n\nEach element in `elements` contains the properties `type`, `name`, and `value`. Note that certain elements, such as [rich text](#section/Rich-text-element) or [taxonomy](#section/Taxonomy-element), can contain additional properties.\n\n## Asset element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/AssetInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Content type snippet element\n\n\nThe Content type snippet elements are expanded into the elements that they contain. You can recognize the expanded elements by their codenames, which use the following format: `<content_type_snippet_codename>__<content_element_codename>`.\n\nFor example, when you [retrieve an item](/learn/reference/delivery-api/#operation/retrieve-a-content-item) that uses a snippet element with 2 elements, the snippet itself will be structured as the 2 elements, without any encapsulation.\n\n<pre class=\"line-numbers\" data-platform-code=\"json\" data-platform-code-original=\"JSON\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">JSON</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">\"seo_metatata__meta_keywords\": {\n  \"type\": \"text\",\n  \"name\": \"Meta keywords\",\n  \"value\": \"donation, africa\"\n},\n\"seo_metatata__meta_description\": {\n  \"type\": \"text\",\n  \"name\": \"Meta description\",\n  \"value\": \"Regularly donate money.\"\n}</div></pre>\n\n## Custom element\n\n\n[Create your own custom element](/learn/tutorials/develop-apps/integrate/content-editing-extensions/) or discover existing ones in the [Custom element sample gallery](https://kentico.github.io/kontent-custom-element-samples/gallery/ \"Custom element sample gallery\").\n\n<SchemaDefinition schemaRef=\"#/components/schemas/CustomElementInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Date and time element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/DateTimeInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Linked items element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/LinkedItemsInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Multiple choice element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/MultipleChoiceInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Number element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/NumberInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Rich text element\n\n\nIn addition to formatted text, the rich text element's `value` property can contain objects representing images, components, content items.\n\nInformation about these objects is stored in separate properties:\n* `images` – stores metadata of assets in the text.\n* `links` – stores metadata about content items linked in the text.\n* `modular_content` – stores metadata of linked items and components in the text.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RichTextInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n### Images (single object)\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RichTextImage\" showReadOnly={true} showWriteOnly={true} /> \n\nThe images in the rich text's `value` are represented by the `figure` and `img` HTML tags.\n\n<pre class=\"line-numbers\" data-platform-code=\"html\" data-platform-code-original=\"HTML\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">HTML</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">&lt;figure data-asset-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\"  data-image-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\"&gt;&lt;img src=\\\"https://assets-us-01.kc-usercontent.com:443/38af179c-40ba-42e7-a5ca-33b8cdcc0d45/66d73245-10e5-4478-93e7-5609fee3cdf7/image.jpg\\\" data-asset-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\" data-image-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\"alt=\\\"\\\"&gt;&lt;/figure&gt;</div></pre>\n\n### Links (single object)\n\n<SchemaDefinition schemaRef=\"#/components/schemas/RichTextLink\" showReadOnly={true} showWriteOnly={true} /> \n\nThe links in the rich text's `value` are represented by the `a` HTML tags.\n\n<pre class=\"line-numbers\" data-platform-code=\"html\" data-platform-code-original=\"HTML\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">HTML</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">&lt;!-- Link to a content item --&gt;\n&lt;a data-item-id=\\\"ef23e568-6aa2-42cd-a120-7823c0ef19f7\\\" href=\\\"\\\"&gt;link to a content item&lt;/a&gt;\n&nbsp;\n&lt;!-- Link to a Web URL, set to open in a new window --&gt;\n&lt;a href=\\\"https://kontent.ai/\\\" data-new-window=\\\"true\\\" target=\\\"_blank\\\"  rel=\\\"noopener noreferrer\\\"&gt;link to web URL&lt;/a&gt;\n&nbsp;\n&lt;!-- Link to an email address --&gt;\n&lt;a data-email-address=\\\"sales@kontent.ai\\\" href=\\\"mailto:sales@kontent.ai\\\"&gt;mailto link&lt;/a&gt;\n&nbsp;\n&lt;!-- Link to an asset --&gt;\n&lt;a data-asset-id=\\\"237362b4-5f2b-480e-a1d3-0ad5a6d5f8bd\\\" href=\\\"https://assets-us-01.kc-usercontent.com:443/38af179c-40ba-42e7-a5ca-33b8cdcc0d45/237362b4-5f2b-480e-a1d3-0ad5a6d5f8bd/image.jpg\\\"&gt;link to asset&lt;/a&gt;</div></pre>\n\n### Modular content (components and items in rich text)\n\nThe content items and components inserted in the rich text's `value` are represented by the `object` HTML element.\n\nFor both content items and components, the `object` HTML element specifies these attributes:\n* `data-type` – Its value is `item` for both content items and components. This lets you use a single method to resolve your items and components.\n* `data-rel` – Its value is either `link` (for content items inserted into rich text) or `component` (for components inserted into rich text). Use the attribute to differentiate between components and items.\n* `data-codename` – Its value specifies the codename of the content item or component.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Two distinct </strong><code>modular_content</code><strong> properties</strong></p>\n<p>In the <a data-item-id=\"286dbb0e-f673-494f-abfd-3f39c7ec3446\" href=\"https://kontent.ai/learn/link-to/linked_content_and_components\"><code>modular_content</code> object property</a> of the Delivery API response, you can find the contents of the linked content items and content components.</p>\n<p>In the rich text element's <a href=\"#section/Rich-text-element/modular-content-components-and-items-in-rich-text\"><code>modular_content</code> array property</a>, you can find the codenames of the inserted content items and content components.</p>\n<p>The codenames in the rich text's <code>modular_content</code> array&nbsp;are grouped and ordered. First comes a group of item codenames followed by a group of component codenames. The order of codenames in each group matches that in the UI.</p>\n\n</div>\n\n<pre class=\"line-numbers\" data-platform-code=\"html\" data-platform-code-original=\"HTML\"><div class=\"infobar\"><ul class=\"infobar__languages\"><li class=\"infobar__lang\">HTML</li></ul><div class=\"infobar__copy\"></div></div><div class=\"clean-code\">&lt;!-- Inserted content item --&gt;\n&lt;object type=\\\"application/kenticocloud\\\" data-type=\\\"item\\\" data-rel=\\\"link\\\" data-codename=\\\"content_item_codename\\\"&gt;&lt;/object&gt;\n&nbsp;\n&lt;!-- Inserted component; the component's codename is system-generated --&gt;\n&lt;object type=\"application/kenticocloud\" data-type=\"item\" data-rel=\"component\" data-codename=\"n249afaaf_1de5_011f_f683_c78fd9ec9d7c\"&gt;&lt;/object&gt;</div></pre>\n\n## Subpages element\n\n\nThis element works only with [Web Spotlight](/learn/tutorials/set-up-kontent-ai/set-up-your-project/web-spotlight/) enabled.\n\n<SchemaDefinition schemaRef=\"#/components/schemas/SubpagesInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Taxonomy element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/TaxonomyInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## Text element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/TextInItem\" showReadOnly={true} showWriteOnly={true} /> \n\n## URL slug element\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/UrlSlugInItem\" showReadOnly={true} showWriteOnly={true} /> \n",
+      "name": "Content elements"
+    },
+    {
+      "description": "Content types define the structure of [content items](/learn/reference/delivery-api/#tag/Content-items). Each content type consists of specific [content elements](/learn/reference/delivery-api/#tag/Content-elements) that define what kind of content (i.e., which data types) the structure holds.\n\n## Content type object\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/ContentType\" showReadOnly={true} showWriteOnly={true} /> \n",
+      "name": "Content types"
+    },
+    {
+      "description": "Languages let you create multilingual content. If you've [set up languages](/learn/tutorials/manage-kontent-ai/projects/set-up-languages/) for your project, you can [get localized content](/learn/tutorials/develop-apps/get-content/localized-content-items/) for each content item by using the `language` query parameter. You can also [get languages](/learn/reference/delivery-api/#operation/list-languages) from your project to dynamically create a language selector in your app, for example.\n\n<div class=\"callout callout--tip\">\n\n<p><strong>Use short machine-readable codenames</strong></p>\n<p>We strongly recommend that you use short, easily identifiable, and machine-readable codenames for your languages. For example, you can specify language codenames based on the <a href=\"https://www.venea.net/web/culture_code\" data-new-window=\"true\" target=\"_blank\" rel=\"noopener noreferrer\">IETF or one of the ISO-639 standards</a>.</p>\n\n</div>\n\n## Language object\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/Language\" showReadOnly={true} showWriteOnly={true} /> \n",
+      "name": "Languages"
+    },
+    {
+      "description": "Taxonomies are a versatile tool for categorizing and organizing your content.\n\nLearn more about the [use cases for taxonomies](/learn/tutorials/manage-kontent-ai/taxonomies/model-taxonomies-right/) and see how to [retrieve content tagged with a specific taxonomy term](/learn/tutorials/develop-apps/get-content/filter-content-items-examples/).\n\n## Taxonomy group object\n\n\n<SchemaDefinition schemaRef=\"#/components/schemas/TaxonomyGroup\" showReadOnly={true} showWriteOnly={true} /> \n",
+      "name": "Taxonomy groups"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "project_id": {
+        "description": "Identifies your project.\n\nIf you're using [environments](/learn/tutorials/manage-kontent-ai/projects/manage-environments/), the project ID becomes environment ID and specifies one of the project's environments.\n",
+        "in": "path",
+        "name": "project_id",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      },
+      "language": {
+        "description": "Determines which language variant of content items to return. By default, the API returns content in the default language.\n\n<div class=\"callout callout--info\">\n\n<p>If the requested content is not available in the specified language variant, the API follows the <a data-item-id=\"9e0f560c-5ee4-4649-818a-c5f934b82f4a\" href=\"https://kontent.ai/learn/link-to/set_up_langauges\">language fallbacks</a> as configured in the <a data-item-id=\"9e0f560c-5ee4-4649-818a-c5f934b82f4a\" href=\"https://kontent.ai/learn/link-to/set_up_langauges\">Localization</a> settings of your project.</p>\n\n</div>\n",
+        "in": "query",
+        "name": "language",
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      },
+      "elements": {
+        "description": "Determines the elements to retrieve using a comma-separated list of element codenames. The `elements` query parameter applies to all content items within the response.\n\nIf not specified, all elements are retrieved. For more details, see [Projection](/learn/reference/delivery-api/#tag/Projection).\n",
+        "in": "query",
+        "name": "elements",
+        "explode": false,
+        "style": "form",
+        "schema": {
+          "$ref": "#/components/schemas/StringArray"
+        }
+      },
+      "order": {
+        "description": "Determines the order of the retrieved objects. By default, the objects are sorted alphabetically by their codenames from A to Z in descending order.\n\nTo sort the requested objects in ascending order, set the `order` to `<property_name>[asc]` where `<property_name>` is the name of the object property you want to sort by. For example, `order=elements.title[asc]` or `order=system.codename[asc]`. Similarly, to sort in descending order, use the `[desc]` modifier. You can sort by any properties in the API response.\n\n**Examples**\n* Sort by date – `order=system.last_modified[desc]`\n* Sort by a content item name – `order=system.name[asc]`\n* Sort by an element value – `order=elements.<element_codename>[asc]`\n",
+        "in": "query",
+        "name": "order",
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      },
+      "depth": {
+        "description": "Determines the level of nesting for content items that the API returns. By default, only the first level of linked items is returned, which is the same as setting `depth=1`.\n\nIf you want to include more than one level of linked items in response, set the `depth` query parameter to `2` or more.\n\nIf you need to exclude all linked items from the response, set the parameter to `0`.\n\n<div class=\"callout callout--info\">\n\n<p>Components are always present in response. See <a data-item-id=\"286dbb0e-f673-494f-abfd-3f39c7ec3446\" href=\"https://kontent.ai/learn/link-to/linked_content_and_components\">Linked content and components</a> for more details.</p>\n\n</div>\n",
+        "in": "query",
+        "name": "depth",
+        "schema": {
+          "$ref": "#/components/schemas/PositiveInteger"
+        }
+      },
+      "skip": {
+        "description": "Sets the number of objects to skip when requesting a list of objects. The `skip` parameter must be combined with the `limit` parameter to work. If `skip` is not specified, the API returns the first page of results.\n\nYou can combine the `limit` and `skip` parameters to specify page size and page number. For example, using `limit=10&skip=10` sets the page size to 10 and gets the second page of results.\n",
+        "in": "query",
+        "name": "skip",
+        "schema": {
+          "$ref": "#/components/schemas/PositiveInteger"
+        }
+      },
+      "limit_8cd54e2": {
+        "description": "Sets the number of objects to retrieve in a single request. If the `limit` parameter is not specified, the API returns all requested objects by default.\n\nIf `limit` is lower than the total number of objects matching your query, the `next_page` property in the `pagination` object of the API response will contain a URL to the next page of results.\n\nThe `limit` parameter affects only the number of items in the `items` property. It doesn't reduce the number of linked items in the `modular_content` property so you may hit the [response size limit](#section/Response-size) unexpectedly. You can set `depth=0` to avoid that.\n",
+        "in": "query",
+        "name": "limit",
+        "schema": {
+          "$ref": "#/components/schemas/PositiveInteger"
+        }
+      },
+      "includetotalcount": {
+        "description": "Adds the information about the total number of content items matching your query. Only [the content filtering parameters](/learn/reference/delivery-api/#tag/Filtering-content) affect the resulting number. Other parameters in your query, such as `limit,` `skip`, or `order`, don't have an effect on it.\n\nThe number doesn't include linked items returned as part of the `modular_content` property. For the total number of items returned within the response, see the `X-Request-Charge` header.\n\nWhen set to `true`, the pagination object returned in the API response contains an additional `total_count` property.\n",
+        "in": "query",
+        "name": "includeTotalCount",
+        "schema": {
+          "$ref": "#/components/schemas/Boolean"
+        }
+      },
+      "x_kc_wait_for_loading_new_content": {
+        "description": "Determines whether the API waits while fetching content, if the requested content has changed since the last request. This is useful when retrieving changed content in reaction to a [webhook](/learn/tutorials/develop-apps/integrate/webhooks/) call.\n\nBy default, when the header is not set, the API serves stale content (if cached by the CDN) while it's fetching the new content to minimize wait time. To always fetch new content, set the header value to `true`.\n",
+        "in": "header",
+        "name": "X-KC-Wait-For-Loading-New-Content",
+        "schema": {
+          "$ref": "#/components/schemas/Boolean"
+        }
+      },
+      "x_request_charge": {
+        "description": "Specifies the number of content items returned in the response. This number covers both the items that directly match the specified query and the linked items returned in the response's `modular_content` property.\n\nIf the `X-Request-Charge` value of your requests exceeds 1000, we recommend applying more specific [filters](/learn/reference/delivery-api/#tag/Filtering-content) and checking if a lower value for the [`depth` parameter](#tag/Linked-content-and-components/linked-content-depth) works for you. Fewer items returned per response means shorter response times and better performance for your app.\n",
+        "in": "header",
+        "name": "X-Request-Charge",
+        "schema": {
+          "$ref": "#/components/schemas/PositiveInteger"
+        }
+      },
+      "item_codename": {
+        "description": "Identifies the content item by codename.\n",
+        "in": "path",
+        "name": "item_codename",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      },
+      "x_continuation": {
+        "description": "Determines the next page of results to retrieve. By default, when the header is not set, the API returns the first page of results.\n\nIf there are more items to enumerate, the response will come with the `X-Continuation` header. To get the next page of results, use the `X-Continuation` header from the response in your request.\n",
+        "in": "header",
+        "name": "X-Continuation",
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      },
+      "type_codename": {
+        "description": "Identifies the content type by codename.\n",
+        "in": "path",
+        "name": "type_codename",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      },
+      "element_codename": {
+        "description": "Identifies the element by codename within the specified content type.\n\n<div class=\"callout callout--info\">\n\n<p>The element's codename has no relation to the type of the element.</p>\n\n</div>\n",
+        "in": "path",
+        "name": "element_codename",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      },
+      "taxonomy_group_codename": {
+        "description": "Identifies the taxonomy group by codename.\n",
+        "in": "path",
+        "name": "taxonomy_group_codename",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/String"
+        }
+      }
+    },
+    "requestBodies": {},
+    "responses": {},
+    "schemas": {
+      "String": {
+        "type": "string"
+      },
+      "StringArray": {
+        "items": {
+          "$ref": "#/components/schemas/String"
+        },
+        "type": "array"
+      },
+      "PositiveInteger": {
+        "format": "int32",
+        "minimum": 0,
+        "type": "integer"
+      },
+      "Boolean": {
+        "example": true,
+        "type": "boolean"
+      },
+      "rendition": {
+        "description": "The name of the object represents an image preset's codename. Currently, there's only one default preset that holds the [customized image](/tutorials/write-and-collaborate/create-content/work-with-media#a-customize-assets-for-a-better-fit).\n",
+        "required": [
+          "rendition_id",
+          "preset_id",
+          "width",
+          "height",
+          "query"
+        ],
+        "properties": {
+          "rendition_id": {
+            "description": "The rendition's ID.\n",
+            "example": "b447ca6c-8020-4e8f-be57-1d110721e535",
+            "format": "uuid",
+            "type": "string"
+          },
+          "preset_id": {
+            "description": "The preset's ID.\n",
+            "example": "a6d98cd5-8b2c-4e50-99c9-15192bce2490",
+            "format": "uuid",
+            "type": "string"
+          },
+          "width": {
+            "description": "The rendition's width.\n",
+            "example": 1280,
+            "format": "int32",
+            "type": "integer"
+          },
+          "height": {
+            "description": "The rendition's height.\n",
+            "example": 1024,
+            "format": "int32",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Parameters set for the image rendition.\n",
+            "example": "w=1280&h=1024&fit=clip&rect=2396,169,1280,1024",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "asset",
+            "enum": [
+              "asset"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Teaser image",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The assets inserted into the element. The asset objects are returned in the same order as shown in the UI.\n\nSome of the properties are specific to images only: `width` and `height` represent the image's width and height dimensions and the `renditions` object contains details about [customized images](/learn/tutorials/write-and-collaborate/create-content/work-with-media/).\n\nTo display customized images on the website or an app, you first need to apply custom query parameters to the asset's original URL.\n",
+            "items": {
+              "required": [
+                "name",
+                "type",
+                "size",
+                "description",
+                "url",
+                "width",
+                "height",
+                "renditions"
+              ],
+              "properties": {
+                "name": {
+                  "description": "The asset's name.\n",
+                  "example": "sources.jpg",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The file's [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types).\n",
+                  "example": "image/jpeg",
+                  "type": "string"
+                },
+                "size": {
+                  "description": "The file's size in bytes.\n",
+                  "example": 45376,
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "description": {
+                  "description": "The asset's description for a specific language.\n",
+                  "example": "Description of what the asset represents.",
+                  "nullable": true,
+                  "type": "string"
+                },
+                "url": {
+                  "description": "The asset's absolute URL.\n",
+                  "example": "https://assets-us-01.kc-usercontent.com/975bf280-fd91-488c-994c-2f04416e5ee3/3e76909f-599f-4742-b472-77fd4b510e92/sources.jpg",
+                  "type": "string"
+                },
+                "width": {
+                  "description": "The image's width in pixels. Is `null` if the file is not an image.\n",
+                  "example": 640,
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "height": {
+                  "description": "The image's height in pixels. Is `null` if the file is not an image.\n",
+                  "example": 457,
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "renditions": {
+                  "description": "The image's rendition. Contains query parameters that need to be concatenated with the original asset's URL to apply image customization.\n",
+                  "properties": {
+                    "default": {
+                      "$ref": "#/components/schemas/rendition"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CustomElementInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "custom",
+            "enum": [
+              "custom"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Markdown editor",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The element's value.\n",
+            "example": "# Heading\\n\\nPlaintext\\n\\n[link](https://example.com)",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 100000,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DateTimeInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "date_time",
+            "enum": [
+              "date_time"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Post date",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The element's value as a [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) formatted string. Time in this element is displayed and interpreted as [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time \"Coordinated Universal Time\").\n",
+            "example": "2019-08-26T13:56:37.7643832Z",
+            "nullable": true,
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LinkedItemsInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "modular_content",
+            "enum": [
+              "modular_content"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Author",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The linked content items as an array of item codenames.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Matching order</strong></p>\n<p>The order of the codenames in the array matches the order of the content items in the UI. The content of these items can be found in the <code>modular_content</code> property (where the items are not ordered) of the API response when <a data-item-id=\"4fafdf10-32c6-4020-a91a-cf1f835f8107\" href=\"https://kontent.ai/learn/link-to/list_content_items\">getting content items</a>.</p>\n\n</div>\n",
+            "example": [
+              "author_item_codename"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/String"
+            },
+            "uniqueItems": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MultipleChoiceInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "multiple_choice",
+            "enum": [
+              "multiple_choice"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "The Earth is flat",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The element's value as an array of selected multiple choice options.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Matching order</strong></p>\n<p>The order of the objects in the array matches the order of the options in the UI.</p>\n\n</div>\n",
+            "example": [
+              {
+                "name": "False",
+                "codename": "false"
+              }
+            ],
+            "items": {
+              "required": [
+                "name",
+                "codename"
+              ],
+              "properties": {
+                "name": {
+                  "description": "The multiple choice option's display name.\n",
+                  "example": "My option",
+                  "minLength": 1,
+                  "maxLength": 150,
+                  "type": "string"
+                },
+                "codename": {
+                  "description": "The multiple choice option's codename.\n",
+                  "example": "my_option",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "uniqueItems": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "NumberInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "number",
+            "enum": [
+              "number"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Days since last accident",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The element's value.\n",
+            "example": 7,
+            "nullable": true,
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "RichTextImage": {
+        "description": "The name of the object represents an image id, such as `14mio`.\n",
+        "required": [
+          "image_id",
+          "description",
+          "url",
+          "width",
+          "height"
+        ],
+        "properties": {
+          "image_id": {
+            "description": "The image's ID.\n",
+            "example": "04e4957f-08ed-4329-9c7a-0d7b7c6f3590",
+            "format": "uuid",
+            "type": "string"
+          },
+          "description": {
+            "description": "The image's description in a specific language. Used for the alt attribute of an `<img>` tag.\n",
+            "example": "Person sitting on a wooden pier",
+            "type": "string"
+          },
+          "url": {
+            "description": "The image's absolute URL.\n",
+            "example": "https://assets-us-01.kc-usercontent.com/8d20758c-d74c-4f59-ae04-ee928c0816b7/6e38c039-ad00-47f3-a584-26252827655a/daylight.jpg",
+            "type": "string"
+          },
+          "width": {
+            "description": "The image's width.\n",
+            "example": 4000,
+            "format": "int32",
+            "type": "integer"
+          },
+          "height": {
+            "description": "The image's height.\n",
+            "example": 2525,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RichTextLink": {
+        "description": "The name of the object represents a content item ID, such as `f4b3fc05-e988-4dae-9ac1-a94aba566474`.\n",
+        "required": [
+          "type",
+          "codename",
+          "url_slug"
+        ],
+        "properties": {
+          "type": {
+            "description": "The codename of the linked item's type.\n",
+            "example": "article",
+            "type": "string"
+          },
+          "codename": {
+            "description": "The content item's codename.\n",
+            "example": "my_article",
+            "type": "string"
+          },
+          "url_slug": {
+            "description": "The content item's URL slug. If the linked item doesn't use a URL slug element, the value of the `url_slug` property is an empty string.\n",
+            "example": "my-article",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RichTextInItem": {
+        "required": [
+          "type",
+          "name",
+          "images",
+          "links",
+          "modular_content",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "rich_text",
+            "enum": [
+              "rich_text"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Rich text showcase",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "images": {
+            "description": "The images inserted into the rich text element. Each [image object](#section/Rich-text-element/images-single-object) contains the image's metadata.\n",
+            "example": {
+              "66d73245-10e5-4478-93e7-5609fee3cdf7": {
+                "image_id": "66d73245-10e5-4478-93e7-5609fee3cdf7",
+                "description": null,
+                "url": "https://assets-us-01.kc-usercontent.com:443/38af179c-40ba-42e7-a5ca-33b8cdcc0d45/66d73245-10e5-4478-93e7-5609fee3cdf7/image.jpg",
+                "width": 600,
+                "height": 457
+              }
+            },
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RichTextImage",
+              "x-additionalPropertiesName": "<image_id>"
+            },
+            "type": "object"
+          },
+          "links": {
+            "description": "The hyperlinks in the text that point to content items. Each [link object](#section/Rich-text-element/links-single-object) contains the linked item's metadata.\n",
+            "example": {
+              "ef23e568-6aa2-42cd-a120-7823c0ef19f7": {
+                "codename": "content_item_codename",
+                "type": "article",
+                "url_slug": "my-article"
+              }
+            },
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RichTextLink",
+              "x-additionalPropertiesName": "<content_item_id>"
+            },
+            "type": "object"
+          },
+          "modular_content": {
+            "description": "Contains codenames of the [components and content items](#section/Rich-text-element/modular-content-components-and-items-in-rich-text) (not their contents) inserted into the rich text element.\n\nTo get the contents of the inserted components and items, see how to [retrieve linked content](#tag/Linked-content-and-components/retrieve-linked-content).\n\n<div class=\"callout callout--info\">\n\n<p><strong>Two distinct </strong><code>modular_content</code><strong> properties</strong></p>\n<p>In the <a data-item-id=\"286dbb0e-f673-494f-abfd-3f39c7ec3446\" href=\"https://kontent.ai/learn/link-to/linked_content_and_components\"><code>modular_content</code> object property</a> of the Delivery API response, you can find the contents of the linked content items and content components.</p>\n<p>In the rich text element's <a href=\"#section/Rich-text-element/modular-content-components-and-items-in-rich-text\"><code>modular_content</code> array property</a>, you can find the codenames of the inserted content items and content components.</p>\n<p>The codenames in the rich text's <code>modular_content</code> array&nbsp;are grouped and ordered. First comes a group of item codenames followed by a group of component codenames. The order of codenames in each group matches that in the UI.</p>\n\n</div>\n",
+            "example": [
+              "content_item_codename",
+              "n26275539_7e71_01ce_ee08_e55340bb9ea6"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/String"
+            },
+            "uniqueItems": true,
+            "type": "array"
+          },
+          "value": {
+            "description": "The element's value.\n\n<div class=\"callout callout--info\">\n\n<p>If the element does not contain any content, its value defaults to a single empty paragraph: <code>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</code>.</p>\n\n</div>\n",
+            "example": "<p>Basic formatted text: plain text, <strong>bold</strong>, <em>italics</em>, <code>monospace</code>, <sub>subscript</sub>, <sup>superscript</sup>.</p>\\n<p>Links: <a data-item-id=\\\"ef23e568-6aa2-42cd-a120-7823c0ef19f7\\\" href=\\\"\\\">link to a content item</a>, <a href=\\\"https://kontent.ai/\\\" data-new-window=\\\"true\\\" target=\\\"_blank\\\" rel=\\\"noopener noreferrer\\\">link to web URL</a>, <a data-email-address=\\\"sales@kontent.ai\\\" href=\\\"mailto:sales@kontent.ai\\\">email link</a>, <a data-asset-id=\\\"237362b4-5f2b-480e-a1d3-0ad5a6d5f8bd\\\" href=\\\"https://assets-us-01.kc-usercontent.com:443/38af179c-40ba-42e7-a5ca-33b8cdcc0d45/237362b4-5f2b-480e-a1d3-0ad5a6d5f8bd/image.jpg\\\">link to asset</a>.</p>\\n<p>Table</p>\\n<table><tbody>\\n  <tr><td>A</td><td>B</td><td>C</td></tr>\\n  <tr><td>D</td><td>E</td><td>F</td></tr>\\n  <tr><td>G</td><td>H</td><td>I</td></tr>\\n</tbody></table>\\n<p>Image</p>\\n<figure data-asset-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\" data-image-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\"><img src=\\\"https://assets-us-01.kc-usercontent.com:443/38af179c-40ba-42e7-a5ca-33b8cdcc0d45/66d73245-10e5-4478-93e7-5609fee3cdf7/image.jpg\\\" data-asset-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\" data-image-id=\\\"66d73245-10e5-4478-93e7-5609fee3cdf7\\\" alt=\\\"\\\"></figure>\\n<p>Inserted content item</p>\\n<object type=\\\"application/kenticocloud\\\" data-type=\\\"item\\\" data-rel=\\\"link\\\" data-codename=\\\"content_item_codename\\\"></object>\\n<p>Component</p>\\n<object type=\\\"application/kenticocloud\\\" data-type=\\\"item\\\" data-rel=\\\"component\\\" data-codename=\\\"n26275539_7e71_01ce_ee08_e55340bb9ea6\\\"></object>",
+            "maxLength": 100000,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SubpagesInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "modular_content",
+            "enum": [
+              "modular_content"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Subpages",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The linked pages as an array of item codenames.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Matching order</strong></p>\n<p>The order of the codenames in the array matches the order of the content items in the UI. The content of these items can be found in the <code>modular_content</code> property (where the items are not ordered) of the API response when <a data-item-id=\"4fafdf10-32c6-4020-a91a-cf1f835f8107\" href=\"https://kontent.ai/learn/link-to/list_content_items\">getting content items</a>.</p>\n\n</div>\n",
+            "example": [
+              "about_us",
+              "contact"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/String"
+            },
+            "uniqueItems": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TaxonomyInItem": {
+        "required": [
+          "type",
+          "name",
+          "taxonomy_group",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "taxonomy",
+            "enum": [
+              "taxonomy"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Categories",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "taxonomy_group": {
+            "description": "The codename of a specific taxonomy group that the element is using.\n",
+            "example": "categories",
+            "type": "string"
+          },
+          "value": {
+            "description": "The element's value as an array of selected taxonomy terms.\n",
+            "items": {
+              "required": [
+                "name",
+                "codename"
+              ],
+              "properties": {
+                "name": {
+                  "description": "The taxonomy term's display name.\n",
+                  "example": "Technology",
+                  "type": "string"
+                },
+                "codename": {
+                  "description": "The taxonomy term's codename.\n",
+                  "example": "technology",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TextInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's  type.\n",
+            "example": "text",
+            "enum": [
+              "text"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Meta keywords",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The element's value.\n",
+            "example": "donation, charity",
+            "nullable": true,
+            "maxLength": 100000,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UrlSlugInItem": {
+        "required": [
+          "type",
+          "name",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "url_slug",
+            "enum": [
+              "url_slug"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "URL",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "value": {
+            "description": "The element's value can be either auto-generated from a text element or custom.\n",
+            "example": "structure-your-content",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ContentItem": {
+        "description": "The content item with metadata and individual elements.\n",
+        "required": [
+          "system",
+          "elements"
+        ],
+        "properties": {
+          "system": {
+            "description": "The content item's system properties.\n",
+            "required": [
+              "id",
+              "collection",
+              "name",
+              "codename",
+              "language",
+              "type",
+              "sitemap_locations",
+              "last_modified"
+            ],
+            "properties": {
+              "id": {
+                "description": "The content item's internal ID.\n",
+                "example": "335d17ac-b6ba-4c6a-ae31-23c1193215cb",
+                "format": "uuid",
+                "type": "string"
+              },
+              "collection": {
+                "description": "The content item's [collection](/learn/tutorials/manage-kontent-ai/projects/set-up-collections/) codename. For projects without collections enabled, the value is `default`.\n",
+                "example": "default",
+                "type": "string"
+              },
+              "name": {
+                "description": "The content item's display name.\n",
+                "example": "My article",
+                "type": "string"
+              },
+              "codename": {
+                "description": "The content item's codename. By default, generated from the item's display name.\n",
+                "example": "my_article",
+                "type": "string"
+              },
+              "language": {
+                "description": "The codename of the language that the content is in.\n\nFor details on retrieving content in different languages, see [Getting localized content](/learn/tutorials/develop-apps/get-content/localized-content-items/).\n",
+                "example": "en-US",
+                "type": "string"
+              },
+              "type": {
+                "description": "The codename of the item's type.\n",
+                "example": "article",
+                "type": "string"
+              },
+              "sitemap_locations": {
+                "description": "A list of sitemap locations that the content item is in.\n",
+                "example": [],
+                "deprecated": true,
+                "items": {
+                  "$ref": "#/components/schemas/String"
+                },
+                "type": "array"
+              },
+              "last_modified": {
+                "description": "[ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) formatted date and time of the last change to user-content of the content item.\n\n<div class=\"callout callout--info\">\n\n<p>Moving content items through workflow doesn't affect the <code>last_modified</code> value.</p>\n\n</div>\n",
+                "example": "2019-03-27T13:21:11.38Z",
+                "format": "date-time",
+                "type": "string"
+              },
+              "workflow_step": {
+                "description": "The codename of the item's current workflow step. By default, generated from the workflow step's display name.\n\nThis property is not present for [components](/learn/reference/delivery-api/#tag/Linked-content-and-components).\n",
+                "example": "published",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "elements": {
+            "description": "The item's [elements](/learn/reference/delivery-api/#tag/Content-elements) with values for the specific language.\n\n<div class=\"callout callout--info\">\n\n<p>The order of the element objects might not match the content element order in the UI.</p>\n\n</div>\n",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AssetInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/CustomElementInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/DateTimeInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/LinkedItemsInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/MultipleChoiceInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/NumberInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/RichTextInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/SubpagesInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/TaxonomyInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/TextInItem"
+                },
+                {
+                  "$ref": "#/components/schemas/UrlSlugInItem"
+                }
+              ],
+              "x-additionalPropertiesName": "<element_codename>"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "Pagination": {
+        "description": "Information about the current page of results.\n",
+        "required": [
+          "skip",
+          "limit",
+          "count",
+          "next_page"
+        ],
+        "properties": {
+          "skip": {
+            "description": "The number of objects skipped from the response. Reflects the value specified by the `skip` query parameter.\n",
+            "example": 20,
+            "format": "int32",
+            "default": 0,
+            "type": "integer"
+          },
+          "limit": {
+            "description": "The number of objects returned in the response. Reflects the value specified by the `limit` query parameter.\n",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "count": {
+            "description": "The number of retrieved objects.\n\nIf the `limit` and `skip` query parameters are not specified, the `count` property reflects the total number of objects in the project.\n",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_count": {
+            "description": "The total number of objects matching the query.\n\nThe property is present only when [listing content items](/learn/reference/delivery-api/#operation/list-content-items) and using the `includeTotalCount` query parameter.\n",
+            "format": "int32",
+            "type": "integer"
+          },
+          "next_page": {
+            "description": "A URL to the next page of results.\n",
+            "example": "https://deliver.kontent.ai/<project_id>/<resource>?limit=10&skip=30",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DeliveryError": {
+        "description": "Error response\n",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "description": "The error message explaining what caused the error.\n",
+            "example": "The continuation token specified in the 'X-Continuation' request header is malformed.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "The performed request's unique ID.\n",
+            "example": "d9b4b4e4750ee210",
+            "nullable": true,
+            "type": "string"
+          },
+          "error_code": {
+            "description": "The internal error code for the type of error. Used for finding patterns among error requests.\n",
+            "example": 107,
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 500,
+            "type": "integer"
+          },
+          "specific_code": {
+            "description": "Only useful for finding reasons behind failed requests in specific cases.\n",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "AssetInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "asset",
+            "enum": [
+              "asset"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Teaser image",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "teaser_image",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "CustomElementInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "custom",
+            "enum": [
+              "custom"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Markdown editor",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CustomElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CustomElementInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "markdown_editor",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "DateTimeInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "date_time",
+            "enum": [
+              "date_time"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Post date",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DateTimeElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DateTimeInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "post_date",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "LinkedItemsInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "modular_content",
+            "enum": [
+              "modular_content"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Author",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LinkedItemsElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LinkedItemsInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "author",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "MultipleChoiceInType": {
+        "required": [
+          "type",
+          "name",
+          "options"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "multiple_choice",
+            "enum": [
+              "multiple_choice"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Show image border",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "options": {
+            "description": "The list of multiple choice options available for the element. The order of the option objects in the array matches the order of the options in the UI.\n",
+            "example": [
+              {
+                "name": "True",
+                "codename": "true"
+              },
+              {
+                "name": "False",
+                "codename": "false"
+              }
+            ],
+            "items": {
+              "required": [
+                "name",
+                "codename"
+              ],
+              "properties": {
+                "name": {
+                  "description": "The multiple choice option's display name.\n",
+                  "example": "My option",
+                  "minLength": 1,
+                  "maxLength": 150,
+                  "type": "string"
+                },
+                "codename": {
+                  "description": "The multiple choice option's codename.\n",
+                  "example": "my_option",
+                  "minLength": 1,
+                  "maxLength": 150,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "uniqueItems": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MultipleChoiceElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MultipleChoiceInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "show_image_border",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "NumberInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "number",
+            "enum": [
+              "number"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Days since last accident",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NumberElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NumberInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "days_since_last_accident",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "SubpagesInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "modular_content",
+            "enum": [
+              "modular_content"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Subpages",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SubpagesElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SubpagesInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "subpages",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "TaxonomyInType": {
+        "required": [
+          "type",
+          "name",
+          "taxonomy_group"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "taxonomy",
+            "enum": [
+              "taxonomy"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Category",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          },
+          "taxonomy_group": {
+            "description": "The codename of a specific taxonomy group that the element is using.\n",
+            "example": "category",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TaxonomyElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TaxonomyInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "category",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "TextInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's  type.\n",
+            "example": "text",
+            "enum": [
+              "text"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Meta keywords",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TextElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TextInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "meta_keywords",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "RichTextInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "rich_text",
+            "enum": [
+              "rich_text"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "Description",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RichTextElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RichTextInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "description",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "UrlSlugInType": {
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "description": "The element's type.\n",
+            "example": "url_slug",
+            "enum": [
+              "url_slug"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "The element's display name.\n",
+            "example": "URL",
+            "minLength": 1,
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UrlSlugElement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UrlSlugInType"
+          },
+          {
+            "properties": {
+              "codename": {
+                "description": "The element's codename.\n",
+                "example": "url",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "ContentType": {
+        "description": "A content type object.\n",
+        "required": [
+          "system",
+          "elements"
+        ],
+        "properties": {
+          "system": {
+            "description": "The content type's system properties.\n",
+            "required": [
+              "id",
+              "name",
+              "codename",
+              "last_modified"
+            ],
+            "properties": {
+              "id": {
+                "description": "Unique internal identifier of the content type.\n",
+                "example": "b2c14f2c-6467-460b-a70b-bca17972a33a",
+                "format": "uuid",
+                "type": "string"
+              },
+              "name": {
+                "description": "Display name of the content type.\n",
+                "example": "Article",
+                "type": "string"
+              },
+              "codename": {
+                "description": "Codename of the content type, generated from the content types's `name`.\n",
+                "example": "article",
+                "type": "string"
+              },
+              "last_modified": {
+                "description": "[ISO-8601](https://en.wikipedia.org/wiki/ISO_8601 \"International standard covering the exchange of date- and time-related data\") formatted date-time of the last content type change.\n",
+                "example": "2019-10-20T12:03:17.4685693Z",
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "elements": {
+            "description": "A list of [elements](/learn/reference/delivery-api/#tag/Content-elements) that define the content type.\n\n<div class=\"callout callout--info\">\n\n<p><strong>Order may not match the order in UI</strong></p>\n<p>The order of the elements in the API response might not match their order in the UI.</p>\n\n</div>\n",
+            "example": {
+              "multiple_choice": {
+                "type": "multiple_choice",
+                "name": "Multiple choices",
+                "options": [
+                  {
+                    "name": "True",
+                    "codename": "true"
+                  },
+                  {
+                    "name": "False",
+                    "codename": "false"
+                  }
+                ]
+              },
+              "text": {
+                "type": "text",
+                "name": "Text element"
+              },
+              "taxonomy": {
+                "type": "taxonomy",
+                "name": "Categories taxonomy",
+                "taxonomy_group": "categories"
+              }
+            },
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AssetInType"
+                },
+                {
+                  "$ref": "#/components/schemas/CustomElementInType"
+                },
+                {
+                  "$ref": "#/components/schemas/DateTimeInType"
+                },
+                {
+                  "$ref": "#/components/schemas/LinkedItemsInType"
+                },
+                {
+                  "$ref": "#/components/schemas/MultipleChoiceInType"
+                },
+                {
+                  "$ref": "#/components/schemas/NumberInType"
+                },
+                {
+                  "$ref": "#/components/schemas/RichTextInType"
+                },
+                {
+                  "$ref": "#/components/schemas/SubpagesInType"
+                },
+                {
+                  "$ref": "#/components/schemas/TaxonomyInType"
+                },
+                {
+                  "$ref": "#/components/schemas/TextInType"
+                },
+                {
+                  "$ref": "#/components/schemas/UrlSlugInType"
+                }
+              ],
+              "x-additionalPropertiesName": "<element_codename>"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "Language": {
+        "description": "A language in your project.\n",
+        "properties": {
+          "system": {
+            "properties": {
+              "id": {
+                "description": "The language's ID.\n",
+                "example": "00000000-0000-0000-0000-000000000000",
+                "type": "string"
+              },
+              "name": {
+                "description": "The language's name.\n",
+                "example": "Default project language",
+                "type": "string"
+              },
+              "codename": {
+                "description": "The language's codename.\n",
+                "example": "default",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "TaxonomyTerm": {
+        "required": [
+          "name",
+          "codename",
+          "terms"
+        ],
+        "properties": {
+          "name": {
+            "description": "The taxonomy term's display name.\n",
+            "type": "string"
+          },
+          "codename": {
+            "description": "The taxonomy term's codename.\n",
+            "type": "string"
+          },
+          "terms": {
+            "description": "A list of descendant taxonomy terms.\n",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyTerm"
+            },
+            "uniqueItems": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TaxonomyGroup": {
+        "required": [
+          "system",
+          "terms"
+        ],
+        "properties": {
+          "system": {
+            "description": "The taxonomy group's system properties.\n",
+            "required": [
+              "id",
+              "name",
+              "codename",
+              "last_modified"
+            ],
+            "properties": {
+              "id": {
+                "description": "The taxonomy group's internal ID.\n",
+                "example": "f30c7f72-e9ab-8832-2a57-62944a038809",
+                "format": "uuid",
+                "type": "string"
+              },
+              "name": {
+                "description": "The taxonomy group's display name.\n",
+                "example": "Programming language",
+                "type": "string"
+              },
+              "codename": {
+                "description": "The taxonomy group's codename.\n",
+                "example": "programming_language",
+                "type": "string"
+              },
+              "last_modified": {
+                "description": "[ISO-8601](https://en.wikipedia.org/wiki/ISO_8601 \"International standard covering the exchange of date- and time-related data\") formatted date-time of the last change to the taxonomy group.\n",
+                "example": "2019-08-31T09:41:06.520241Z",
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "terms": {
+            "description": "A list of taxonomy terms.\n",
+            "example": [
+              {
+                "name": "C#",
+                "codename": "c_",
+                "terms": []
+              },
+              {
+                "name": "JavaScript",
+                "codename": "javascript",
+                "terms": []
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyTerm"
+            },
+            "uniqueItems": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

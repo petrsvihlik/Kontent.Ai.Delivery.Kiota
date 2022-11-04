@@ -1,0 +1,1 @@
+dotnet kiota generate -d ".\delivery_api.json" -c DeliveryApiClient -n Kontent.Ai.Delivery.Kiota -o ".\client" -l csharp
